@@ -1,0 +1,14 @@
+#db-form {
+  .db-info {
+    display: flex;
+    gap: 8px;
+
+    .host-name-field {
+      flex: 1;
+    }
+
+    .port-field {
+      flex: 0.25;
+    }
+  }
+}

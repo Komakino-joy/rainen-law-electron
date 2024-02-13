@@ -1,0 +1,18 @@
+.react-confirm-alert-body {
+  
+  .react-confirm-alert-button-group {
+
+  
+    button {
+      height: 35px;
+      width: 80px;
+      &:first-child {
+        background-color: #0077d9;
+      }
+  
+      &:nth-child(2) {
+        background-color: rgba(32, 29, 29, 0.904);
+      }
+    }
+  }
+}

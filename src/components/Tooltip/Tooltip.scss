@@ -1,0 +1,31 @@
+.tooltip-container {
+  position: relative;
+  display: inline-block;
+  z-index: 999;
+  height: fit-content;
+}
+
+.tooltip-text {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: #fff;
+  padding: 8px;
+  border-radius: 4px;
+  display: none;
+}
+
+.tooltip-container:hover .tooltip-text {
+  font-size: 14px;
+  width: 300px;
+  white-space: normal;
+  display: block;
+  line-height: 20px;
+  letter-spacing: 0.2px;
+}
+
+.icon {
+  cursor: pointer !important; /* Make the icon cursor change on hover */
+}

@@ -1,0 +1,30 @@
+.homepage-wrapper {
+  .homepage-content {
+    width: fit-content;
+    margin: 0 auto;
+
+    .welcome-header{
+      width: 100%;
+      padding: 35px 10px;
+      margin: 0 0 60px 0; 
+      
+      h1 {
+        letter-spacing: 2px;
+        font-size: 30px;
+      }
+
+      h2 {
+        letter-spacing: 1px;
+        margin-left: 15px;
+        font-weight: 500;
+      }
+    }
+
+    h3 {
+      margin-bottom: 10px;
+      font-size: 25px;
+      font-weight: 500;
+    }
+
+  }
+}

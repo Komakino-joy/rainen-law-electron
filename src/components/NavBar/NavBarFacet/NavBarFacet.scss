@@ -1,0 +1,67 @@
+.nav-bar-facet {
+  position: relative;
+  width: fit-content;
+  text-transform: capitalize;
+
+  .nav-bar-facet-header {
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    line-height: 30px;
+
+    .selected {
+      color: #0056f7;
+      font-weight: 600;
+      text-decoration: underline;
+    }
+
+    i {
+      font-size: 10px;
+      margin-top: 2px;
+      margin-left: 5px;
+    }
+  }
+
+  .hidden {
+    overflow: hidden;
+    transition: all 0.5s ease-in-out;
+    max-height: 0;
+    opacity: 0;
+    display: none;
+  }
+  .expanded {
+    max-height: fit-content;
+    opacity: 1;
+    display: unset;
+    position: absolute;
+    z-index: 100;
+    background-color: white;
+    border-radius: 8px;
+    padding: 10px;
+    border: 1px solid rgb(219, 219, 219);
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.342);
+
+    .nav-bar-facet-dropdown {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      line-height: 24px;
+
+      .dropdown-option {
+        font-size: 15px;
+        white-space: nowrap;
+        font-weight: 500;
+        padding: 5px 0px;
+        cursor: pointer;
+
+        &:hover {
+          color: #0077d9;
+        }
+      }
+    }
+  }
+}

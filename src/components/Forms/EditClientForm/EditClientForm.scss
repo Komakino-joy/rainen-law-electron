@@ -1,0 +1,50 @@
+#client-edit-form {
+  .client-status-section,
+  .city-state-zip-section,
+  .phone-fax-email-section,
+  .contact-statement-section,
+  .address-section {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    align-items: center;
+
+    .client,
+    .address {
+      flex: 1;
+    }
+
+    .status {
+      flex: 0.2;
+    }
+
+    .state {
+      flex: 0.5;
+    }
+
+    .city {
+      flex: 1;
+    }
+
+    .zip {
+      flex: 0.5;
+    }
+
+    .phone,
+    .fax,
+    .email,
+    .contact,
+    .statement {
+      flex: 1;
+    }
+  }
+
+  .notes-section {
+    textarea {
+      resize: none;
+      height: 50px;
+      padding: 5px;
+      width: 100%;
+    }
+  }
+}

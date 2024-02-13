@@ -1,0 +1,65 @@
+#edit-property-form {
+  .top-section,
+  .mid-section {
+    gap: 10px;
+  }
+
+  .column-1 {
+    flex: 1;
+  }
+
+  .column-2,
+  .column-3 {
+    flex: 0.25;
+  }
+
+  .city-state-section,
+  .zip-street-section,
+  .lot-condo-unit-section,
+  .status-type-section,
+  .comp-ref-file-num-section,
+  .client-id-file-section,
+  .requester-req-date-close-date-section {
+    gap: 10px;
+    width: 100%;
+    align-items: center;
+
+    .assigned,
+    .requester {
+      width: 310px;
+    }
+
+    .city,
+    .street,
+    .county,
+    .clientName {
+      flex: 1;
+    }
+
+    .state,
+    .zip {
+      flex: 0.25;
+      min-width: 82px;
+    }
+
+    .compRef,
+    .fileNumber,
+    .clientFileNumber {
+      flex: 0.5;
+    }
+  }
+
+  .status-type-section,
+  .instructions-section {
+    margin-top: 5px;
+  }
+
+  .instructions-section {
+    textarea {
+      resize: none;
+      height: 50px;
+      padding: 5px;
+      width: 100%;
+    }
+  }
+}

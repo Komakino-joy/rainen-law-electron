@@ -1,0 +1,63 @@
+.base-styles {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: white;
+  color: #0077d9;
+  border: 1px solid #0077d9;
+  font-family: inherit;
+  letter-spacing: .5px;
+  cursor: pointer;
+  font-weight: 500;
+
+  &:hover {
+    color: white;
+    background-color: #0077d9ef;
+  }
+
+  &:active {
+    transform: scale(.99);
+  }
+
+  &:focus {
+    outline: 1px solid #0077d9ef;
+    font-weight: bold;
+  }
+
+  &.red-variant {
+    border: 1px solid red;
+    color: red;
+
+    &:hover {
+      color: white;
+      outline: none;
+      background-color: rgba(255, 0, 0, 0.801);
+    }
+
+    &:focus {
+      outline: 1px solid rgba(255, 0, 0, 0.801);
+      font-weight: bold;
+    }
+  }
+
+
+  &.disabled {
+    background-color: rgb(224, 224, 224);
+    border: none;
+    cursor: not-allowed;
+    color: rgb(105, 105, 105);
+
+    &:hover {
+      background-color: rgb(224, 224, 224);
+    }
+
+    &:active {
+      transform: none;
+    }
+
+    &:focus {
+      outline: none;
+      font-weight: unset;
+    }
+  }
+}

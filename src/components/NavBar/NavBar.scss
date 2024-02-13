@@ -1,0 +1,38 @@
+#nav-bar-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 25px;
+  padding: 10px;
+  margin-bottom: 40px;
+
+  .sign-out-button {
+    margin-left: auto;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 16px;
+    text-transform: uppercase;
+    text-decoration: underline;
+    color: rgb(0, 110, 255);
+    margin-right: 10px;
+
+    &:hover {
+      filter: brightness(80%);
+    }
+  }
+
+  .home {
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    line-height: 30px;
+
+    &.selected {
+      color: #0056f7;
+      font-weight: 600;
+      text-decoration: underline;
+    }
+  }
+}
