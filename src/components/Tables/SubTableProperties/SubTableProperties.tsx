@@ -27,10 +27,10 @@ const SubTableProperties: React.FC<OwnProps> = ({ cnmbr }) => {
 
   useEffect(() => {
     (async () => {
-      window.electron.ipcRenderer.sendMessage(ipc.postPropertiesInfo, {
+      await window.electron.ipcRenderer.sendMessage(ipc.postPropertiesInfo, {
         cnmbr,
       });
-      window.electron.ipcRenderer.once(
+      await window.electron.ipcRenderer.once(
         ipc.postPropertiesInfo,
         (propertiesInfo) => {
           setTableData(propertiesInfo);

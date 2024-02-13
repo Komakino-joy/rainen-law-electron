@@ -15,8 +15,10 @@ const SubTableINS: React.FC<OwnProps> = ({ inmbr, settitlescount }) => {
 
   useEffect(() => {
     (async () => {
-      window.electron.ipcRenderer.sendMessage(ipc.postInsTitlesInfo, { inmbr });
-      window.electron.ipcRenderer.once(
+      await window.electron.ipcRenderer.sendMessage(ipc.postInsTitlesInfo, {
+        inmbr,
+      });
+      await window.electron.ipcRenderer.once(
         ipc.postInsTitlesInfo,
         ({ titles, count }) => {
           setTableData(titles);

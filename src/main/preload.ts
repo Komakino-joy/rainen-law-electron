@@ -15,15 +15,23 @@ export type Channels =
   | 'postSelectedProperty'
   | 'postPropertiesInfo'
   | 'postUpdateProperty'
+  | 'postDeleteUser'
+  | 'postInsertUser'
+  | 'postSelectedUser'
+  | 'postUpdateUser'
   | 'getNewCompRef'
   | 'getAllClients'
+  | 'getAllUsers'
   | 'getLatestUpdatedClients'
   | 'postInsertClient'
   | 'postSelectedClient'
   | 'postUpdateClient'
   | 'getExaminers'
   | 'getDropDownOptions'
-  | 'postInsTitlesInfo';
+  | 'postInsTitlesInfo'
+  | 'postInsertDropDownOptions'
+  | 'postSelectedDropDownOptions'
+  | 'postUpdateDropDownOptions';
 
 const electronHandler = {
   ipcRenderer: {

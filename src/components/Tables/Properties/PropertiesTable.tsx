@@ -51,10 +51,13 @@ const PropertiesTable: React.FC<OwnProps> = ({
         {
           label: 'Yes',
           onClick: async () => {
-            window.electron.ipcRenderer.sendMessage(ipc.postDeleteProperty, {
-              id,
-            });
-            window.electron.ipcRenderer.once(
+            await window.electron.ipcRenderer.sendMessage(
+              ipc.postDeleteProperty,
+              {
+                id,
+              },
+            );
+            await window.electron.ipcRenderer.once(
               ipc.postDeleteProperty,
               (response) => {
                 if (response.status === 'success') {

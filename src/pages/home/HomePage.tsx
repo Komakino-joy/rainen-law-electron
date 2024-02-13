@@ -9,8 +9,10 @@ import HomeRecordPreviewCard from '@/components/HomeRecordPreviewCard/HomeRecord
 import { ipc } from '~/constants/ipcEvents';
 import { Client, ModalType, Property } from '~/contracts';
 import { useUser } from '~/context/AuthContext';
+import { useIsConnectedToDB } from '~/context/DatabaseContext';
 
 const HomePage: React.FC = () => {
+  const isConnectedToDB = useIsConnectedToDB();
   const user = useUser();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [propertyData, setPropertyData] = useState<Property[] | null>(null);
@@ -53,29 +55,36 @@ const HomePage: React.FC = () => {
 
   useEffect(() => {
     mounted.current = true;
-    setIsLoading(true);
 
     const httpFetchPropertyData = async () => {
-      window.electron.ipcRenderer.sendMessage(ipc.getLatestUpdatedProperties);
-      window.electron.ipcRenderer.once(
+      setIsLoading(true);
+      await window.electron.ipcRenderer.sendMessage(
+        ipc.getLatestUpdatedProperties,
+      );
+      await window.electron.ipcRenderer.once(
         ipc.getLatestUpdatedProperties,
         (response) => {
           setPropertyData(response);
         },
       );
+      setIsLoading(false);
     };
 
     const httpFetchClientData = async () => {
-      window.electron.ipcRenderer.sendMessage(ipc.getLatestUpdatedClients);
-      window.electron.ipcRenderer.once(
+      setIsLoading(true);
+      await window.electron.ipcRenderer.sendMessage(
+        ipc.getLatestUpdatedClients,
+      );
+      await window.electron.ipcRenderer.once(
         ipc.getLatestUpdatedClients,
         (clients) => {
           setClientData(clients);
         },
       );
+      setIsLoading(false);
     };
 
-    if (mounted) {
+    if (mounted.current && isConnectedToDB) {
       httpFetchPropertyData();
       httpFetchClientData();
       setIsLoading(false);
@@ -84,7 +93,7 @@ const HomePage: React.FC = () => {
     return () => {
       mounted.current = false;
     };
-  }, []);
+  }, [isConnectedToDB]);
 
   const dataLoaded = propertyData && clientData;
 

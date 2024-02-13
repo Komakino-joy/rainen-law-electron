@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Dispatch, createContext, useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import { ipc } from '~/constants/ipcEvents';
@@ -22,27 +22,40 @@ export const DatabaseContextProvider = ({ children }: { children: any }) => {
   const [isConnectedToDB, setIsConnectedToDB] = useState<boolean>(false);
   const [isLoadingDBContext, setIsLoading] = useState<boolean>(true);
 
+  const mounted = useRef(false);
+
   useEffect(() => {
+    mounted.current = true;
+    async function fetchDBConnectionStatus() {
+      setIsLoading(true);
+      await window.electron.ipcRenderer.sendMessage(ipc.checkDBConnection);
+      await window.electron.ipcRenderer.once(
+        ipc.checkDBConnection,
+        ({ isConnectedToDB }) => {
+          setIsConnectedToDB(isConnectedToDB);
+        },
+      );
+      setIsLoading(false);
+    }
+
+    if (mounted.current) fetchDBConnectionStatus();
+
+    return () => {
+      mounted.current = false;
+    };
+  }, [isConnectedToDB]);
+
+  const connectToDB = async (credentials: DBCredentials) => {
     setIsLoading(true);
-    window.electron.ipcRenderer.sendMessage(ipc.checkDBConnection);
-    window.electron.ipcRenderer.once(
-      ipc.checkDBConnection,
+    await window.electron.ipcRenderer.sendMessage(ipc.connectDB, credentials);
+    await window.electron.ipcRenderer.once(
+      ipc.connectDB,
       ({ isConnectedToDB }) => {
+        if (!isConnectedToDB)
+          toast.error('Authentication failed', { id: 'DB auth' });
         setIsConnectedToDB(isConnectedToDB);
       },
     );
-    setIsLoading(false);
-  }, []);
-
-  const connectToDB = (credentials: DBCredentials) => {
-    setIsLoading(true);
-    console.log(credentials);
-    window.electron.ipcRenderer.sendMessage(ipc.connectDB, credentials);
-    window.electron.ipcRenderer.once(ipc.connectDB, ({ isConnectedToDB }) => {
-      if (!isConnectedToDB)
-        toast.error('Authentication failed', { id: 'DB auth' });
-      setIsConnectedToDB(isConnectedToDB);
-    });
     setIsLoading(false);
   };
 

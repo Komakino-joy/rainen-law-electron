@@ -92,11 +92,11 @@ const EditPropertyForm: React.FC<OwnProps> = ({
       if (propertyId) {
         setIsLoading(true);
 
-        window.electron.ipcRenderer.sendMessage(
+        await window.electron.ipcRenderer.sendMessage(
           ipc.postSelectedProperty,
           propertyId,
         );
-        window.electron.ipcRenderer.once(
+        await window.electron.ipcRenderer.once(
           ipc.postSelectedProperty,
           (response) => {
             const {
@@ -221,12 +221,15 @@ const EditPropertyForm: React.FC<OwnProps> = ({
           },
         );
       } else if (queryType === 'insert') {
-        window.electron.ipcRenderer.sendMessage(ipc.getNewCompRef);
-        window.electron.ipcRenderer.once(ipc.getNewCompRef, (response) => {
-          return {
-            p_comp_ref: response,
-          };
-        });
+        await window.electron.ipcRenderer.sendMessage(ipc.getNewCompRef);
+        await window.electron.ipcRenderer.once(
+          ipc.getNewCompRef,
+          (response) => {
+            return {
+              p_comp_ref: response,
+            };
+          },
+        );
       }
     },
   });
@@ -241,26 +244,19 @@ const EditPropertyForm: React.FC<OwnProps> = ({
     if (isDirtyAlt) return;
 
     if (queryType === 'insert') {
-      window.electron.ipcRenderer.sendMessage(ipc.postInsertProperty, {
+      await window.electron.ipcRenderer.sendMessage(ipc.postInsertProperty, {
         data,
         username: user ? user.username : 'N/A',
       });
-      window.electron.ipcRenderer.once(ipc.postInsertProperty, (response) => {
-        reset();
-        handleAfterSubmit(response.newPropId);
-        // @ts-ignore
-        toast[response.status](response.message);
-      });
-
-      // const response = await httpPostInsertProperty({
-      //   data,
-      //   username: user ? user.username : "N/A",
-      // });
-
-      // reset();
-      // handleAfterSubmit(response.newPropId);
-      // // @ts-ignore
-      // toast[response.status](response.message);
+      await window.electron.ipcRenderer.once(
+        ipc.postInsertProperty,
+        (response) => {
+          reset();
+          handleAfterSubmit(response.newPropId);
+          // @ts-ignore
+          toast[response.status](response.message);
+        },
+      );
     }
 
     if (queryType === 'update') {
@@ -270,12 +266,15 @@ const EditPropertyForm: React.FC<OwnProps> = ({
           {
             label: 'Yes',
             onClick: async () => {
-              window.electron.ipcRenderer.sendMessage(ipc.postUpdateProperty, {
-                data,
-                id: propertyInfoSnippet.id, // Passing id to update correct record
-                username: user ? user.username : 'N/A',
-              });
-              window.electron.ipcRenderer.once(
+              await window.electron.ipcRenderer.sendMessage(
+                ipc.postUpdateProperty,
+                {
+                  data,
+                  id: propertyInfoSnippet.id, // Passing id to update correct record
+                  username: user ? user.username : 'N/A',
+                },
+              );
+              await window.electron.ipcRenderer.once(
                 ipc.postUpdateProperty,
                 (response) => {
                   handleAfterSubmit(propertyInfoSnippet.id);
@@ -284,16 +283,6 @@ const EditPropertyForm: React.FC<OwnProps> = ({
                   toast[response.status](response.message);
                 },
               );
-
-              // const response = await httpPostUpdateProperty({
-              //   data,
-              //   id: propertyInfoSnippet.id, // Passing id to update correct record
-              //   username: user ? user.username : "N/A",
-              // });
-              // handleAfterSubmit(propertyInfoSnippet.id);
-              // reset(response.updatedRecord);
-              // // @ts-ignore
-              // toast[response.status](response.message);
             },
           },
           {

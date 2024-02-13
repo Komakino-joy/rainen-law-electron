@@ -50,8 +50,8 @@ const ClientsTable: React.FC<OwnProps> = ({
         {
           label: 'Yes',
           onClick: async () => {
-            window.electron.ipcRenderer.sendMessage(ipc.postDeleteClient);
-            window.electron.ipcRenderer.once(
+            await window.electron.ipcRenderer.sendMessage(ipc.postDeleteClient);
+            await window.electron.ipcRenderer.once(
               ipc.postDeleteClient,
               (response) => {
                 if (response.status === 'success') {

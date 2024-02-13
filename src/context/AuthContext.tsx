@@ -44,16 +44,21 @@ export const AuthProvider = ({ children }: { children: any }) => {
 
   // log in the user
   const login = async (userData: UserCredentials) => {
-    window.electron.ipcRenderer.sendMessage(ipc.postLogin, userData);
-    window.electron.ipcRenderer.once(ipc.postLogin, ({ authResponse }) => {
-      if (authResponse.status === 'success') {
-        setUser(authResponse.user);
-        localStorage.setItem('user', JSON.stringify(authResponse.user));
-        navigate('/main_window');
-      } else {
-        toast.error(authResponse.message, { id: 'invalid-credentials' });
-      }
-    });
+    setIsLoading(true);
+    await window.electron.ipcRenderer.sendMessage(ipc.postLogin, userData);
+    await window.electron.ipcRenderer.once(
+      ipc.postLogin,
+      ({ authResponse }) => {
+        if (authResponse.status === 'success') {
+          setUser(authResponse.user);
+          localStorage.setItem('user', JSON.stringify(authResponse.user));
+          navigate('/main_window');
+        } else {
+          toast.error(authResponse.message, { id: 'invalid-credentials' });
+        }
+      },
+    );
+    setIsLoading(false);
   };
 
   // log out the user

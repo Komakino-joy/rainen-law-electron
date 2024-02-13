@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { ipc } from '~/constants/ipcEvents';
 import {
   City,
@@ -69,12 +63,13 @@ export const SelectDropDownsContextProvider = ({
   const mounted = useRef(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      mounted.current = true;
-      const httpFetchDropDownOptions = async () => {
-        setIsLoading(true);
-        window.electron.ipcRenderer.sendMessage(ipc.getDropDownOptions);
-        window.electron.ipcRenderer.once(ipc.getDropDownOptions, (response) => {
+    mounted.current = true;
+    async function fetchDropdownOptions() {
+      setIsLoading(true);
+      await window.electron.ipcRenderer.sendMessage(ipc.getDropDownOptions);
+      await window.electron.ipcRenderer.once(
+        ipc.getDropDownOptions,
+        (response) => {
           const {
             allCitiesList,
             clientStatusList,
@@ -122,18 +117,16 @@ export const SelectDropDownsContextProvider = ({
           );
 
           setIsLoading(false);
-        });
-      };
-
-      if (mounted && isConnectedToDB) {
-        httpFetchDropDownOptions();
-      }
-
-      return () => {
-        mounted.current = false;
-      };
+        },
+      );
     }
-  }, []);
+
+    if (mounted.current && isConnectedToDB) fetchDropdownOptions();
+
+    return () => {
+      mounted.current = false;
+    };
+  }, [isConnectedToDB]);
 
   return (
     <SelectDropDownsContext.Provider

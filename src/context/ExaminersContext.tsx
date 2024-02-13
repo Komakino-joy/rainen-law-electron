@@ -1,14 +1,7 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { ipc } from '~/constants/ipcEvents';
 import { Examiner } from '~/contracts';
 import { useIsConnectedToDB } from './DatabaseContext';
-
 interface OwnProps {
   isLoadingExaminerscontext: boolean;
   examinersList: any[];
@@ -26,38 +19,33 @@ export const ExaminersContextProvider = ({ children }: { children: any }) => {
   const [isLoadingExaminerscontext, setIsLoading] = useState<boolean>(false);
   const [examinersList, setExaminersList] = useState([]);
   const [examinersDropDownOptions, setExaminersDropDownOptions] = useState([]);
-
   const mounted = useRef(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      mounted.current = true;
-      const fetchExaminerInfo = async () => {
-        setIsLoading(true);
-        window.electron.ipcRenderer.sendMessage(ipc.getExaminers);
-        window.electron.ipcRenderer.once(ipc.getExaminers, (response) => {
-          setExaminersList(response);
+    mounted.current = true;
+    async function fetchExaminers() {
+      setIsLoading(true);
+      await window.electron.ipcRenderer.sendMessage(ipc.getExaminers);
+      await window.electron.ipcRenderer.once(ipc.getExaminers, (response) => {
+        setExaminersList(response);
 
-          setExaminersDropDownOptions(
-            response.map((examiner: Examiner) => ({
-              label: examiner.name,
-              value: examiner.name,
-            })),
-          );
+        setExaminersDropDownOptions(
+          response.map((examiner: Examiner) => ({
+            label: examiner.name,
+            value: examiner.name,
+          })),
+        );
 
-          setIsLoading(false);
-        });
-      };
-
-      if (mounted && isConnectedToDB) {
-        fetchExaminerInfo();
-      }
-
-      return () => {
-        mounted.current = false;
-      };
+        setIsLoading(false);
+      });
     }
-  }, []);
+
+    if (mounted.current && isConnectedToDB) fetchExaminers();
+
+    return () => {
+      mounted.current = false;
+    };
+  }, [isConnectedToDB]);
 
   return (
     <ExaminersContext.Provider

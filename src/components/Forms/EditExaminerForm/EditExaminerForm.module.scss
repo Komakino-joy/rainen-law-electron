@@ -1,0 +1,15 @@
+.code-type-section {
+  gap: 10px;
+
+  .code,
+  .type {
+    flex: 1;
+  }
+}
+
+.comp-active-section {
+  gap: 10px;
+  .comp {
+    flex: 1;
+  }
+}

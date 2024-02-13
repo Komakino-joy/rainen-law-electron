@@ -1,7 +1,7 @@
 import { dbRef } from '../../constants/dbRefs';
 import { getConn } from '../dbconfig';
 
-export async function getUsers() {
+export async function getAllUsers() {
   try {
     const conn = await getConn();
     const selectQuery = `

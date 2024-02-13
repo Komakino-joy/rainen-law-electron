@@ -14,10 +14,16 @@ const SubTableSellerBuyer: React.FC<OwnProps> = ({ compRef }) => {
 
   useEffect(() => {
     (async () => {
-      window.electron.ipcRenderer.sendMessage(ipc.postBuyerSellerInfo, compRef);
-      window.electron.ipcRenderer.once(ipc.postBuyerSellerInfo, (response) => {
-        setTableData(response);
-      });
+      await window.electron.ipcRenderer.sendMessage(
+        ipc.postBuyerSellerInfo,
+        compRef,
+      );
+      await window.electron.ipcRenderer.once(
+        ipc.postBuyerSellerInfo,
+        (response) => {
+          setTableData(response);
+        },
+      );
     })();
   }, [compRef]);
 

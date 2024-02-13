@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import EditClientForm from "@/components/Forms/EditClientForm/EditClientForm";
-import Modal from "@/components/Modal/Modal";
+import { useState } from 'react';
+import EditClientForm from '@/components/Forms/EditClientForm/EditClientForm';
+import Modal from '@/components/Modal/Modal';
 
 const AddNewClientPage = () => {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
@@ -26,7 +26,7 @@ const AddNewClientPage = () => {
           handleAfterSubmit={handleAfterSubmit}
         />
       </div>
-      <Modal onClose={handleModalClose} show={showModal} title={""}>
+      <Modal onClose={handleModalClose} show={showModal} title={''}>
         {selectedClientId && (
           <EditClientForm clientId={selectedClientId} queryType="update" />
         )}

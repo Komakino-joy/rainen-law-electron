@@ -63,11 +63,11 @@ const ClientForm: React.FC<OwnProps> = ({
       if (clientId) {
         setIsLoading(true);
 
-        window.electron.ipcRenderer.sendMessage(
+        await window.electron.ipcRenderer.sendMessage(
           ipc.postSelectedClient,
           clientId,
         );
-        window.electron.ipcRenderer.once(
+        await window.electron.ipcRenderer.once(
           ipc.postSelectedClient,
           (clientInfo) => {
             const {
@@ -143,14 +143,17 @@ const ClientForm: React.FC<OwnProps> = ({
 
   const onSubmit = async (data: Partial<Client>) => {
     if (queryType === 'insert') {
-      window.electron.ipcRenderer.sendMessage(ipc.postInsertClient, {
+      await window.electron.ipcRenderer.sendMessage(ipc.postInsertClient, {
         data,
         username: user.username,
       });
-      window.electron.ipcRenderer.once(ipc.postInsertClient, (newClientId) => {
-        reset();
-        handleAfterSubmit(newClientId);
-      });
+      await window.electron.ipcRenderer.once(
+        ipc.postInsertClient,
+        (newClientId) => {
+          reset();
+          handleAfterSubmit(newClientId);
+        },
+      );
     }
 
     if (queryType === 'update') {
@@ -160,12 +163,15 @@ const ClientForm: React.FC<OwnProps> = ({
           {
             label: 'Yes',
             onClick: async () => {
-              window.electron.ipcRenderer.sendMessage(ipc.postUpdateClient, {
-                data,
-                id: clientInfoSnippet.id, // Passing id to update correct record
-                username: user.username,
-              });
-              window.electron.ipcRenderer.once(
+              await window.electron.ipcRenderer.sendMessage(
+                ipc.postUpdateClient,
+                {
+                  data,
+                  id: clientInfoSnippet.id, // Passing id to update correct record
+                  username: user.username,
+                },
+              );
+              await window.electron.ipcRenderer.once(
                 ipc.postUpdateClient,
                 (updatedRecord) => {
                   handleAfterSubmit(clientInfoSnippet.id);

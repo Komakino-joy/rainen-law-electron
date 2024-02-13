@@ -1,14 +1,7 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { ipc } from '~/constants/ipcEvents';
 import { Client, LabelValuePair } from '~/contracts';
 import { hasValue, uniqueLabelValuePairs } from '~/utils';
-import { useIsloggedIn } from './AuthContext';
 import { useIsConnectedToDB } from './DatabaseContext';
 
 interface OwnProps {
@@ -46,19 +39,15 @@ const ClientsContext = createContext<OwnProps>({
 });
 
 export const ClientsContextProvider = ({ children }: { children: any }) => {
+  const isConnectedToDB = useIsConnectedToDB();
   const [isLoadingClientsContext, setIsLoading] = useState<boolean>(false);
   const [clientSelectOptions, setclientSelectOptions] = useState<any>([]);
-
   const mounted = useRef(false);
-  const isLoggedIn = useIsloggedIn();
-  const isConnectedToDB = useIsConnectedToDB();
 
   useEffect(() => {
-    const httpFetchClientInfo = async () => {
-      mounted.current = true;
-
+    mounted.current = true;
+    async function fetchClientsContextData() {
       setIsLoading(true);
-
       // These are the only fields we care to make into Options for Select component
       const fields = [
         'c_name',
@@ -74,8 +63,8 @@ export const ClientsContextProvider = ({ children }: { children: any }) => {
         'c_email',
       ];
 
-      window.electron.ipcRenderer.sendMessage(ipc.getAllClients);
-      window.electron.ipcRenderer.once(ipc.getAllClients, (response) => {
+      await window.electron.ipcRenderer.sendMessage(ipc.getAllClients);
+      await window.electron.ipcRenderer.once(ipc.getAllClients, (response) => {
         const clientsObject = response.reduce((acc: any, row: Client) => {
           // Iterate through our fields and see if we have assigned a value for each property in our accumulator
           // Assign empty array if no value is found
@@ -116,16 +105,13 @@ export const ClientsContextProvider = ({ children }: { children: any }) => {
         setclientSelectOptions(clientsObject);
         setIsLoading(false);
       });
-    };
-
-    if (mounted && isLoggedIn && isConnectedToDB) {
-      httpFetchClientInfo();
     }
+    if (mounted.current && isConnectedToDB) fetchClientsContextData();
 
     return () => {
       mounted.current = false;
     };
-  }, [isLoggedIn, isConnectedToDB]);
+  }, [isConnectedToDB]);
 
   return (
     <ClientsContext.Provider
