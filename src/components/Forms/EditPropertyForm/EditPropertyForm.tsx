@@ -14,7 +14,6 @@ import { useUser } from '~/context/AuthContext';
 import { Property } from '~/contracts';
 import {
   timestampToDate,
-  abbreviatedStatesLabelValuePair,
   updateAddressSuffix,
   dateToString,
   convertNullsToStrings,
@@ -28,6 +27,7 @@ import { useSelectDropDownsContext } from '~/context/SelectDropDownsContext';
 import 'react-tabs/style/react-tabs.css';
 import './EditPropertyForm.scss';
 import { dbRef } from '~/constants/dbRefs';
+import { stateAbbrvsDropDownOptions } from '~/constants/stateAbbrvs';
 
 interface OwnProps {
   propertyId: string | null;
@@ -266,7 +266,7 @@ const EditPropertyForm: React.FC<OwnProps> = ({
                         defaultValue={defaultSelectValues.p_state}
                         customClass="state"
                         selectOnChange={onChange}
-                        options={abbreviatedStatesLabelValuePair}
+                        options={stateAbbrvsDropDownOptions}
                         isRequired={true}
                         // @ts-ignore
                         register={register}

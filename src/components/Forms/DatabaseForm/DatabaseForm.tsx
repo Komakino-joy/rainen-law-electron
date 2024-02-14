@@ -1,5 +1,4 @@
 import { useForm } from 'react-hook-form';
-import toast from 'react-hot-toast';
 import Button from '@/components/Button/Button';
 import { useDatabaseContext } from '~/context/DatabaseContext';
 import { DBCredentials } from '~/model/dbconfig';
@@ -12,21 +11,23 @@ const DatabaseForm = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors, isDirty },
-  } = useForm();
+    formState: { errors },
+  } = useForm({
+    defaultValues: { ...window.electron.store.get('dbCredentials') },
+  });
 
   const onSubmit = async (credentials: DBCredentials) => {
-    if (!isDirty) {
-      toast.error('All required fields must be filled out', {
-        id: 'DB Form Required Fields',
-      });
-    }
+    window.electron.store.set('dbCredentials', credentials);
     connectToDB(credentials);
   };
 
   return (
     <div className="form-wrapper edit-form">
-      <form id="db-form" className="flex-y" onSubmit={handleSubmit(onSubmit)}>
+      <form
+        id="db-form"
+        className="flex-y"
+        onSubmit={handleSubmit(onSubmit as any)}
+      >
         <FormInput
           name="user"
           labelKey="user"

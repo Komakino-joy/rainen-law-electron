@@ -102,8 +102,8 @@ const SelectOptionsTable: React.FC<DynamicTable> = ({
             await window.electron.ipcRenderer.once(
               ipc.postDeleteDropDownOption,
               (response) => {
-                if (response.data.status === 'success') {
-                  toast.success(response.data.message, {
+                if (response.status === 'success') {
+                  toast.success(response.message, {
                     id: 'delete-select-drop-down-options',
                   });
 
@@ -113,8 +113,8 @@ const SelectOptionsTable: React.FC<DynamicTable> = ({
                   setTableData(filteredArray);
                 }
 
-                if (response.data.status === 'error') {
-                  toast.error(response.data.message, {
+                if (response.status === 'error') {
+                  toast.error(response.message, {
                     id: 'delete-select-drop-down-options',
                   });
                 }

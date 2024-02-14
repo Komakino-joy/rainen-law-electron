@@ -7,6 +7,7 @@ export async function getDistinctCityOptions() {
     const getDistinctCities = `
         SELECT DISTINCT TRIM(p.${dbRef.properties.p_city}) AS ${dbRef.properties.p_city}
         FROM ${dbRef.table_names.properties} p 
+        WHERE TRIM(p.${dbRef.properties.p_city}) != ''
         ORDER BY ${dbRef.properties.p_city};
       `;
     const result = await conn.query(getDistinctCities);

@@ -28,7 +28,7 @@ export async function postSelectedDropDownOption(payload: OwnProps) {
     const selectStatusCodeQuery = pgPromise.as.format(query, [id]);
     const results = await conn.query(selectStatusCodeQuery);
 
-    return results.rows;
+    return results.rows[0];
   } catch (error) {
     console.log(error);
     return {

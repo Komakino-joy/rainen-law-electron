@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import Button from '@/components/Button/Button';
 import Spinner from '@/components/Spinner/Spinner';
+import { useFetchSelectDropDownList } from '~/context/SelectDropDownsContext';
 import { TableRefs } from '~/contracts';
 import { FORM_BUTTON_TEXT } from '~/constants';
 import { ipc } from '~/constants/ipcEvents';
@@ -24,6 +25,7 @@ const EditStatusCodeForm: React.FC<EditStatusCodeFormProps> = ({
   selectedStatusCodeItemId,
   queryType,
 }) => {
+  const fetchUpdatedDropDownList = useFetchSelectDropDownList();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [statusCodeId, setStatusCodeId] = useState<string>('');
 
@@ -37,36 +39,38 @@ const EditStatusCodeForm: React.FC<EditStatusCodeFormProps> = ({
       if (selectedStatusCodeItemId) {
         setIsLoading(true);
 
-        await window.electron.ipcRenderer.sendMessage(
-          ipc.postSelectedDropDownOption,
-          {
-            id: selectedStatusCodeItemId,
-            selectionType,
-          },
-        );
-        await window.electron.ipcRenderer.once(
-          ipc.postSelectedDropDownOption,
-          (statusCodeInfo) => {
-            const {
-              id,
-              status_code = null,
-              status_desc = null,
-              type_code = null,
-              type_desc = null,
-              code: county_code = null,
-              county: county_name = null,
-            } = statusCodeInfo;
+        return await new Promise((resolve) => {
+          window.electron.ipcRenderer.sendMessage(
+            ipc.postSelectedDropDownOption,
+            {
+              id: selectedStatusCodeItemId,
+              selectionType,
+            },
+          );
+          window.electron.ipcRenderer.once(
+            ipc.postSelectedDropDownOption,
+            (statusCodeInfo) => {
+              const {
+                id,
+                status_code = null,
+                status_desc = null,
+                type_code = null,
+                type_desc = null,
+                code: county_code = null,
+                county: county_name = null,
+              } = statusCodeInfo;
 
-            setStatusCodeId(id);
+              setStatusCodeId(id);
 
-            setIsLoading(false);
+              setIsLoading(false);
 
-            return {
-              description: status_desc || type_desc || county_name,
-              code: status_code || type_code || county_code,
-            };
-          },
-        );
+              resolve({
+                description: status_desc || type_desc || county_name,
+                code: status_code || type_code || county_code,
+              });
+            },
+          );
+        });
       }
     },
   });
@@ -81,15 +85,20 @@ const EditStatusCodeForm: React.FC<EditStatusCodeFormProps> = ({
       await window.electron.ipcRenderer.sendMessage(
         ipc.postInsertDropDownOption,
         {
+          ...data,
           selectionType,
-          data,
         },
       );
       await window.electron.ipcRenderer.once(
         ipc.postInsertDropDownOption,
-        (newRecord) => {
-          setTableData([...tableData, newRecord]);
-          reset();
+        ({ newRecord, message, status }) => {
+          toast[status](message, { id: 'insert-drop-down-option' });
+
+          if (status === 'success') {
+            setTableData([newRecord, ...tableData]);
+            reset();
+            fetchUpdatedDropDownList();
+          }
         },
       );
     }
@@ -98,24 +107,28 @@ const EditStatusCodeForm: React.FC<EditStatusCodeFormProps> = ({
       await window.electron.ipcRenderer.sendMessage(
         ipc.postUpdateDropDownOption,
         {
+          ...data,
           id: statusCodeId,
           selectionType,
-          data,
         },
       );
       await window.electron.ipcRenderer.once(
         ipc.postUpdateDropDownOption,
-        (updatedRecord) => {
-          const updatedData = tableData.map((record) => {
-            if (record.id === updatedRecord.id) {
-              record = updatedRecord;
-            }
-            return record;
-          });
+        ({ updatedRecord, message, status }) => {
+          toast[status](message, { id: 'update-drop-down-option' });
 
-          setTableData(updatedData);
+          if (status === 'success') {
+            const updatedData = tableData.map((record) => {
+              if (record.id === updatedRecord.id) {
+                record = updatedRecord;
+              }
+              return record;
+            });
 
-          reset(updatedRecord);
+            setTableData(updatedData);
+            reset(updatedRecord);
+            fetchUpdatedDropDownList();
+          }
         },
       );
     }

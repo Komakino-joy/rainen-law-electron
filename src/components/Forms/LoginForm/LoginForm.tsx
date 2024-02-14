@@ -1,8 +1,8 @@
-import React from "react";
-import { useForm } from "react-hook-form";
-import Button from "@/components/Button/Button";
-import { useAuth } from "~/context/AuthContext";
-import FormInput from "../FormInput/FormInput";
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import Button from '@/components/Button/Button';
+import { useAuth } from '~/context/AuthContext';
+import FormInput from '../FormInput/FormInput';
 
 const LoginForm = () => {
   const { login } = useAuth();
@@ -10,11 +10,16 @@ const LoginForm = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors, isDirty },
-  } = useForm();
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      username: window.electron.store.get('username'),
+      password: '',
+    },
+  });
 
   const onSubmit = async (data: any) => {
-    if (!isDirty) return;
+    window.electron.store.set('username', data.username);
     login(data);
   };
 

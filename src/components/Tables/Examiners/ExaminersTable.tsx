@@ -1,8 +1,13 @@
 import { useMemo } from 'react';
+import { confirmAlert } from 'react-confirm-alert';
+import toast from 'react-hot-toast';
 import { useTable, useFilters } from 'react-table';
+import { ipc } from '~/constants/ipcEvents';
+import { useIsAdmin } from '~/context/AuthContext';
+import { useFetchExaminerList } from '~/context/ExaminersContext';
 import { dbRef } from '~/constants/dbRefs';
 import { Examiner, TableRefs } from '~/contracts';
-import { PencilIcon } from '~/icons/Icons';
+import { PencilIcon, TrashIcon } from '~/icons/Icons';
 
 interface OwnProps {
   tableData: any[];
@@ -22,8 +27,55 @@ const ExaminersTable: React.FC<OwnProps> = ({
   selectionType,
   tableClassName,
   handleModalOpen,
+  setTableData,
 }) => {
-  const data = useMemo(() => tableData, [tableData]);
+  const isAdmin = useIsAdmin();
+  const updateExaminersContext = useFetchExaminerList();
+
+  const handleDelete = (e: React.SyntheticEvent, id: string) => {
+    e.preventDefault();
+
+    confirmAlert({
+      title: 'Confirm to Delete',
+      message: 'Are you sure to delete this record?',
+      buttons: [
+        {
+          label: 'Yes',
+          onClick: async () => {
+            await window.electron.ipcRenderer.sendMessage(
+              ipc.postDeleteExaminer,
+              id,
+            );
+            await window.electron.ipcRenderer.once(
+              ipc.postDeleteExaminer,
+              ({ message, status }) => {
+                toast[status](message, { id: 'delete-examiner' });
+                if (status === 'success') {
+                  const filteredArray = tableData.filter(
+                    (row) => row.id.toString() !== id.toString(),
+                  );
+                  setTableData(filteredArray);
+                  updateExaminersContext();
+                }
+              },
+            );
+          },
+        },
+        {
+          label: 'No',
+          onClick: () =>
+            toast.error('Operation Cancelled.', {
+              id: 'delete-examiner',
+            }),
+        },
+      ],
+    });
+  };
+
+  const data = useMemo(
+    () => tableData.filter((entry) => entry.name != null),
+    [tableData],
+  );
 
   const columns = useMemo(
     () => [
@@ -67,6 +119,19 @@ const ExaminersTable: React.FC<OwnProps> = ({
             <PencilIcon />
           </span>
         ),
+      },
+      {
+        Header: 'Delete',
+        accessor: (d: any) => d.id,
+        Cell: ({ value }: { value: any }) =>
+          isAdmin ? (
+            <span
+              title={`Delete Client: ${value}`}
+              onClick={(e) => handleDelete(e, value)}
+            >
+              <TrashIcon />
+            </span>
+          ) : null,
       },
     ],
     [handleModalOpen, selectionType],

@@ -23,6 +23,7 @@ import {
 } from '~/contracts';
 import { PencilIcon, PlusCircleIcon } from '~/icons/Icons';
 import styles from './ManagementCard.module.scss';
+import EditCityForm from '../Forms/EditCityForm/EditCityForm';
 
 const ManageSelectionFieldsCard = () => {
   const { examinersList, isLoadingExaminerscontext } = useExaminersContext();
@@ -262,6 +263,14 @@ const ManageSelectionFieldsCard = () => {
         ) : null}
         {isUsersTable && hasData ? (
           <EditUserForm
+            tableData={tableData}
+            setTableData={setTableData}
+            selectedId={selectedItemId}
+            queryType={queryType}
+          />
+        ) : null}
+        {isCitiesTable && hasData ? (
+          <EditCityForm
             tableData={tableData}
             setTableData={setTableData}
             selectedId={selectedItemId}

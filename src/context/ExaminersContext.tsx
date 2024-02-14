@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import {
+  Dispatch,
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { ipc } from '~/constants/ipcEvents';
 import { Examiner } from '~/contracts';
 import { useIsConnectedToDB } from './DatabaseContext';
@@ -6,16 +13,19 @@ interface OwnProps {
   isLoadingExaminerscontext: boolean;
   examinersList: any[];
   examinersDropDownOptions: any[];
+  setShouldFetch: Dispatch<boolean>;
 }
 
 const ExaminersContext = createContext<OwnProps>({
   isLoadingExaminerscontext: false,
   examinersList: [],
   examinersDropDownOptions: [],
+  setShouldFetch: () => {},
 });
 
 export const ExaminersContextProvider = ({ children }: { children: any }) => {
   const isConnectedToDB = useIsConnectedToDB();
+  const [shouldFetch, setShouldFetch] = useState(true);
   const [isLoadingExaminerscontext, setIsLoading] = useState<boolean>(false);
   const [examinersList, setExaminersList] = useState([]);
   const [examinersDropDownOptions, setExaminersDropDownOptions] = useState([]);
@@ -30,22 +40,25 @@ export const ExaminersContextProvider = ({ children }: { children: any }) => {
         setExaminersList(response);
 
         setExaminersDropDownOptions(
-          response.map((examiner: Examiner) => ({
-            label: examiner.name,
-            value: examiner.name,
-          })),
+          response
+            .filter((examiner) => examiner.name && examiner.is_active)
+            .map((examiner: Examiner) => ({
+              label: examiner.name,
+              value: examiner.name,
+            })),
         );
 
         setIsLoading(false);
+        setShouldFetch(false);
       });
     }
 
-    if (mounted.current && isConnectedToDB) fetchExaminers();
+    if (mounted.current && isConnectedToDB && shouldFetch) fetchExaminers();
 
     return () => {
       mounted.current = false;
     };
-  }, [isConnectedToDB]);
+  }, [isConnectedToDB, shouldFetch]);
 
   return (
     <ExaminersContext.Provider
@@ -53,6 +66,7 @@ export const ExaminersContextProvider = ({ children }: { children: any }) => {
         examinersList,
         examinersDropDownOptions,
         isLoadingExaminerscontext,
+        setShouldFetch,
       }}
     >
       {children}
@@ -61,3 +75,8 @@ export const ExaminersContextProvider = ({ children }: { children: any }) => {
 };
 
 export const useExaminersContext = () => useContext(ExaminersContext);
+
+export const useFetchExaminerList = () => {
+  const examiner = useContext(ExaminersContext);
+  return () => examiner.setShouldFetch(true);
+};

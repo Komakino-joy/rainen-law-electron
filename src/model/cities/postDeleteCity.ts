@@ -1,13 +1,13 @@
 import pgPromise from 'pg-promise';
 import { getConn } from '../dbconfig';
 
-export async function postDeleteExaminer(id: string) {
+export async function postDeleteCity(id: string) {
   try {
     const conn = await getConn();
     await conn.query('BEGIN');
     const deleteQuery = pgPromise.as.format(
       `
-          DELETE FROM public.examiners WHERE id = $1;
+          DELETE FROM public.cities WHERE id = $1;
         `,
       [id],
     );
@@ -15,7 +15,7 @@ export async function postDeleteExaminer(id: string) {
     await conn.query('COMMIT');
 
     return {
-      message: `Examiner: ${id} successfully removed.`,
+      message: 'Successfully removed.',
       status: 'success',
     };
   } catch (error) {

@@ -1,4 +1,5 @@
 import { BrowserWindow, ipcMain } from 'electron';
+import Store from 'electron-store';
 import { ipc } from '../constants/ipcEvents';
 import { postClientsPage } from '../model/clients/postClientsPage';
 import { postPropertiesPage } from '../model/properties/postPropertiesPage';
@@ -40,8 +41,23 @@ import { getDistinctAssignOptions } from '../model/properties/getDistinctAssignO
 import { getDistinctCityOptions } from '../model/properties/getDistinctCityOptions';
 import { getDistinctStatusOptions } from '../model/properties/getDistinctStatusOptions';
 import { postPropertyReport } from '../model/reports/postPropertyReport';
+import { postUpdateCity } from '../model/cities/postUpdateCity';
+import { getCities } from '../model/cities/getCities';
+import { postDeleteCity } from '../model/cities/postDeleteCity';
+import { postSelectedCity } from '../model/cities/postSelectedCity';
+import { postInsertCity } from '../model/cities/postInsertCity';
+
+const store = new Store();
 
 export function setupIPCListeners() {
+  // Store
+  ipcMain.on('electron-store-get', async (event, val) => {
+    event.returnValue = store.get(val);
+  });
+  ipcMain.on('electron-store-set', async (event, key, val) => {
+    store.set(key, val);
+  });
+
   // Auth
   ipcMain.on(ipc.checkDBConnection, async (event) => {
     const isConnectedToDB = await checkConnection();
@@ -62,6 +78,32 @@ export function setupIPCListeners() {
   ipcMain.on(ipc.postBuyerSellerInfo, async (event, payload: string) => {
     const response = await postBuyerSellerInfo(payload);
     event.reply(ipc.postBuyerSellerInfo, response);
+  });
+
+  // Cities
+  ipcMain.on(ipc.getCities, async (event) => {
+    const response = await getCities();
+    event.reply(ipc.getCities, response);
+  });
+
+  ipcMain.on(ipc.postDeleteCity, async (event, payload) => {
+    const response = await postDeleteCity(payload);
+    event.reply(ipc.postDeleteCity, response);
+  });
+
+  ipcMain.on(ipc.postInsertCity, async (event, payload) => {
+    const response = await postInsertCity(payload);
+    event.reply(ipc.postInsertCity, response);
+  });
+
+  ipcMain.on(ipc.postSelectedCity, async (event, payload) => {
+    const response = await postSelectedCity(payload);
+    event.reply(ipc.postSelectedCity, response);
+  });
+
+  ipcMain.on(ipc.postUpdateCity, async (event, payload) => {
+    const response = await postUpdateCity(payload);
+    event.reply(ipc.postUpdateCity, response);
   });
 
   // Clients
@@ -209,8 +251,8 @@ export function setupIPCListeners() {
     event.reply(ipc.postInsertDropDownOption, response);
   });
 
-  ipcMain.on(ipc.postSelectedDropDownOption, async (event, payload) => {
-    const response = await postSelectedDropDownOption(payload);
+  ipcMain.on(ipc.postSelectedDropDownOption, async (event, id) => {
+    const response = await postSelectedDropDownOption(id);
     event.reply(ipc.postSelectedDropDownOption, response);
   });
 
@@ -322,4 +364,6 @@ export function setupIPCListeners() {
     await win.loadURL(url);
     return 'shown preview window';
   });
+
+  //
 }

@@ -1,8 +1,13 @@
 import { useMemo } from 'react';
+import { confirmAlert } from 'react-confirm-alert';
+import toast from 'react-hot-toast';
 import { useTable, useFilters } from 'react-table';
 import { dbRef } from '~/constants/dbRefs';
+import { ipc } from '~/constants/ipcEvents';
+import { useIsAdmin } from '~/context/AuthContext';
+import { useFetchCityList } from '~/context/CitiesContext';
 import { City, TableRefs } from '~/contracts';
-import { PencilIcon } from '~/icons/Icons';
+import { PencilIcon, TrashIcon } from '~/icons/Icons';
 
 interface OwnProps {
   tableData: any[];
@@ -22,7 +27,51 @@ const CitiesTable: React.FC<OwnProps> = ({
   selectionType,
   tableClassName,
   handleModalOpen,
+  setTableData,
 }) => {
+  const isAdmin = useIsAdmin();
+  const updateCitiesContext = useFetchCityList();
+
+  const handleDelete = (e: React.SyntheticEvent, id: string) => {
+    e.preventDefault();
+
+    confirmAlert({
+      title: 'Confirm to Delete',
+      message: 'Are you sure to delete this record?',
+      buttons: [
+        {
+          label: 'Yes',
+          onClick: async () => {
+            await window.electron.ipcRenderer.sendMessage(
+              ipc.postDeleteCity,
+              id,
+            );
+            await window.electron.ipcRenderer.once(
+              ipc.postDeleteCity,
+              ({ message, status }) => {
+                toast[status](message, { id: 'delete-city' });
+                if (status === 'success') {
+                  const filteredArray = tableData.filter(
+                    (row) => row.id.toString() !== id.toString(),
+                  );
+                  setTableData(filteredArray);
+                  updateCitiesContext();
+                }
+              },
+            );
+          },
+        },
+        {
+          label: 'No',
+          onClick: () =>
+            toast.error('Operation Cancelled.', {
+              id: 'delete-city',
+            }),
+        },
+      ],
+    });
+  };
+
   const data = useMemo(() => tableData, [tableData]);
   const columns = useMemo(
     () => [
@@ -54,6 +103,19 @@ const CitiesTable: React.FC<OwnProps> = ({
             <PencilIcon />
           </span>
         ),
+      },
+      {
+        Header: 'Delete',
+        accessor: (d: any) => d.id,
+        Cell: ({ value }: { value: any }) =>
+          isAdmin ? (
+            <span
+              title={`Delete Client: ${value}`}
+              onClick={(e) => handleDelete(e, value)}
+            >
+              <TrashIcon />
+            </span>
+          ) : null,
       },
     ],
     [handleModalOpen, selectionType],

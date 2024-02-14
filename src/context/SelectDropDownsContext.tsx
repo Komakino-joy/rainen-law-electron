@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import {
+  Dispatch,
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { ipc } from '~/constants/ipcEvents';
 import {
   City,
@@ -21,6 +28,7 @@ interface OwnProps {
   propertyStatusList: PropertyStatus[];
   propertyTypeDropDownOptions: LabelValuePair[];
   propertyTypeList: PropertyType[];
+  setShouldFetch: Dispatch<boolean>;
 }
 
 const SelectDropDownsContext = createContext<OwnProps>({
@@ -35,6 +43,7 @@ const SelectDropDownsContext = createContext<OwnProps>({
   propertyStatusList: [],
   propertyTypeDropDownOptions: [],
   propertyTypeList: [],
+  setShouldFetch: () => {},
 });
 
 export const SelectDropDownsContextProvider = ({
@@ -43,6 +52,7 @@ export const SelectDropDownsContextProvider = ({
   children: any;
 }) => {
   const isConnectedToDB = useIsConnectedToDB();
+  const [shouldFetch, setShouldFetch] = useState(true);
   const [isLoadingSelectDropDownsContext, setIsLoading] =
     useState<boolean>(false);
   const [clientStatusList, setClientStatusList] = useState([]);
@@ -72,6 +82,7 @@ export const SelectDropDownsContextProvider = ({
         window.electron.ipcRenderer.once(ipc.getDropDownOptions, (response) => {
           resolve(response);
           setIsLoading(false);
+          setShouldFetch(false);
         });
       });
 
@@ -122,12 +133,13 @@ export const SelectDropDownsContextProvider = ({
       );
     }
 
-    if (mounted.current && isConnectedToDB) fetchDropdownOptions();
+    if (mounted.current && isConnectedToDB && shouldFetch)
+      fetchDropdownOptions();
 
     return () => {
       mounted.current = false;
     };
-  }, [isConnectedToDB]);
+  }, [isConnectedToDB, shouldFetch]);
 
   return (
     <SelectDropDownsContext.Provider
@@ -143,6 +155,7 @@ export const SelectDropDownsContextProvider = ({
         propertyStatusList,
         propertyTypeDropDownOptions,
         propertyTypeList,
+        setShouldFetch,
       }}
     >
       {children}
@@ -152,3 +165,8 @@ export const SelectDropDownsContextProvider = ({
 
 export const useSelectDropDownsContext = () =>
   useContext(SelectDropDownsContext);
+
+export const useFetchSelectDropDownList = () => {
+  const selectDropDown = useContext(SelectDropDownsContext);
+  return () => selectDropDown.setShouldFetch(true);
+};

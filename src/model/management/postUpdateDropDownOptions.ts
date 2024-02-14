@@ -10,6 +10,7 @@ type OwnProps = {
 };
 
 export async function postUpdateDropDownOption(payload: OwnProps) {
+  console.log({ payload });
   const { id, code, description, selectionType } = payload;
 
   try {

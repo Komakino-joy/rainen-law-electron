@@ -14,9 +14,9 @@ import { ipc } from '~/constants/ipcEvents';
 import { useUser } from '~/context/AuthContext';
 import { useFetchClientList } from '~/context/ClientsContext';
 import { useSelectDropDownsContext } from '~/context/SelectDropDownsContext';
+import { stateAbbrvsDropDownOptions } from '~/constants/stateAbbrvs';
 import { Client, ClientInfoSnippet } from '~/contracts';
 import { convertNullsToStrings, timestampToDate } from '~/utils';
-import { abbreviatedStatesLabelValuePair } from '~/utils/UnitedStates';
 import './EditClientForm.scss';
 
 interface OwnProps {
@@ -270,7 +270,7 @@ const ClientForm: React.FC<OwnProps> = ({
                     defaultValue={defaultSelectValues.c_state}
                     customClass="state"
                     selectOnChange={onChange}
-                    options={abbreviatedStatesLabelValuePair}
+                    options={stateAbbrvsDropDownOptions}
                     isRequired={true}
                     register={register}
                     errors={errors}

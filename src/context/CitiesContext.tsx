@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import {
+  Dispatch,
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { ipc } from '~/constants/ipcEvents';
 import { County } from '~/contracts';
 import { useIsConnectedToDB } from './DatabaseContext';
@@ -7,16 +14,19 @@ interface CitiesProps {
   isLoadingCities: boolean;
   countyIdMap: any;
   countiesList: any[];
+  setShouldFetch: Dispatch<boolean>;
 }
 
 const Cities = createContext<CitiesProps>({
   isLoadingCities: false,
   countyIdMap: {},
   countiesList: [],
+  setShouldFetch: () => {},
 });
 
 export const CitiesProvider = ({ children }: { children: any }) => {
   const isConnectedToDB = useIsConnectedToDB();
+  const [shouldFetch, setShouldFetch] = useState(true);
   const [isLoadingCities, setIsLoading] = useState<boolean>(false);
   const [countiesList, setCountiesList] = useState([]);
   const [countyIdMap, setCountyIdMap] = useState({});
@@ -45,15 +55,16 @@ export const CitiesProvider = ({ children }: { children: any }) => {
         );
 
         setIsLoading(false);
+        setShouldFetch(false);
       });
     }
 
-    if (mounted.current && isConnectedToDB) fetchCities();
+    if (mounted.current && isConnectedToDB && shouldFetch) fetchCities();
 
     return () => {
       mounted.current = false;
     };
-  }, [isConnectedToDB]);
+  }, [isConnectedToDB, shouldFetch]);
 
   return (
     <Cities.Provider
@@ -61,6 +72,7 @@ export const CitiesProvider = ({ children }: { children: any }) => {
         countiesList,
         countyIdMap,
         isLoadingCities,
+        setShouldFetch,
       }}
     >
       {children}
@@ -69,3 +81,8 @@ export const CitiesProvider = ({ children }: { children: any }) => {
 };
 
 export const useCities = () => useContext(Cities);
+
+export const useFetchCityList = () => {
+  const cityCtx = useContext(Cities);
+  return () => cityCtx.setShouldFetch(true);
+};

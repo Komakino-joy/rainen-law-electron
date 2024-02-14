@@ -6,6 +6,7 @@ import Spinner from '@/components/Spinner/Spinner';
 import { FORM_BUTTON_TEXT } from '~/constants';
 import { dbRef } from '~/constants/dbRefs';
 import { ipc } from '~/constants/ipcEvents';
+import { useFetchExaminerList } from '~/context/ExaminersContext';
 import FormInput from '../FormInput/FormInput';
 import styles from './EditExaminerForm.module.scss';
 
@@ -22,6 +23,7 @@ const EditExaminerForm: React.FC<EditEditExaminerFormProps> = ({
   selectedId,
   queryType,
 }) => {
+  const updateExaminersList = useFetchExaminerList();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [examinerId, setExaminerId] = useState<string>('');
   const [defaultSelectValues, setDefaultSelectValues] = useState({
@@ -75,34 +77,41 @@ const EditExaminerForm: React.FC<EditEditExaminerFormProps> = ({
     if (!isDirty) return;
     if (queryType === 'insert') {
       await window.electron.ipcRenderer.sendMessage(ipc.postInsertExaminer, {
-        data,
+        ...data,
       });
       await window.electron.ipcRenderer.once(
         ipc.postInsertExaminer,
-        (newRecord) => {
-          reset();
-          setTableData([...tableData, newRecord]);
+        ({ newRecord, message, status }) => {
+          toast[status](message, { id: 'update-examiner' });
+          if (status === 'success') {
+            setTableData([newRecord, ...tableData]);
+            reset();
+            updateExaminersList();
+          }
         },
       );
     }
 
     if (queryType === 'update') {
       await window.electron.ipcRenderer.sendMessage(ipc.postUpdateExaminer, {
+        ...data,
         id: examinerId,
-        data,
       });
       await window.electron.ipcRenderer.once(
         ipc.postUpdateExaminer,
-        (updatedRecord) => {
-          reset(updatedRecord);
-          const updatedData = tableData.map((record) => {
-            if (record.id === updatedRecord.id) {
-              record = updatedRecord;
-            }
-            return record;
-          });
-
-          setTableData(updatedData);
+        ({ updatedRecord, message, status }) => {
+          toast[status](message, { id: 'update-examiner' });
+          if (status === 'success') {
+            const updatedData = tableData.map((record) => {
+              if (record.id === updatedRecord.id) {
+                record = updatedRecord;
+              }
+              return record;
+            });
+            reset(updatedRecord);
+            setTableData(updatedData);
+            updateExaminersList();
+          }
         },
       );
     }
