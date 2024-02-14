@@ -112,8 +112,6 @@ export const ClientsContextProvider = ({ children }: { children: any }) => {
           return a.value - b.value;
         });
 
-        console.log(clientsObject);
-
         setclientSelectOptions(clientsObject);
         setIsLoading(false);
         setShouldFetch(false);

@@ -39,34 +39,34 @@ const EditExaminerForm: React.FC<EditEditExaminerFormProps> = ({
       if (selectedId) {
         setIsLoading(true);
 
-        await window.electron.ipcRenderer.sendMessage(
-          ipc.postSelectedExaminer,
-          {
-            id: selectedId,
-          },
-        );
-        await window.electron.ipcRenderer.once(
-          ipc.postSelectedExaminer,
-          (examinerInfo) => {
-            const { id, name, code, type, compensate, is_active } =
-              examinerInfo;
+        return await new Promise((resolve) => {
+          window.electron.ipcRenderer.sendMessage(
+            ipc.postSelectedExaminer,
+            selectedId,
+          );
+          window.electron.ipcRenderer.once(
+            ipc.postSelectedExaminer,
+            (examinerInfo) => {
+              const { id, name, code, type, compensate, is_active } =
+                examinerInfo;
 
-            setExaminerId(id);
-            setDefaultSelectValues((prevState) => ({
-              ...prevState,
-              type: type || '',
-            }));
+              setExaminerId(id);
+              setDefaultSelectValues((prevState) => ({
+                ...prevState,
+                type: type || '',
+              }));
 
-            setIsLoading(false);
+              setIsLoading(false);
 
-            return {
-              [dbRef.examiners.name]: name,
-              [dbRef.examiners.code]: code,
-              [dbRef.examiners.compensate]: compensate,
-              [dbRef.examiners.is_active]: is_active,
-            };
-          },
-        );
+              resolve({
+                [dbRef.examiners.name]: name,
+                [dbRef.examiners.code]: code,
+                [dbRef.examiners.compensate]: compensate,
+                [dbRef.examiners.is_active]: is_active,
+              });
+            },
+          );
+        });
       }
     },
   });

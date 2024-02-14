@@ -12,7 +12,7 @@ export async function postSelectedExaminer(id: string) {
       [id],
     );
 
-    const queryResults = (await conn.query(selectQuery)).rows;
+    const queryResults = (await conn.query(selectQuery)).rows[0];
     return queryResults;
   } catch (error) {
     console.log(error);
