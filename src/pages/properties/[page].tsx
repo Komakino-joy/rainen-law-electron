@@ -63,7 +63,7 @@ const PropertiesPage = () => {
   }, [shouldReload, currentPage, isConnectedToDB]);
 
   if (isLoading) return <Spinner containerClassName="page-spinner" />;
-  if (!totalRecords || !pageSize) return <h1>Missing required props</h1>;
+  if (!totalRecords || !pageSize) return <span>No Matching Records Found</span>;
 
   const totalPages = Math.floor(totalRecords / pageSize) || 1;
 

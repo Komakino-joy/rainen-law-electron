@@ -1,3 +1,4 @@
+import { BrowserWindow, ipcMain } from 'electron';
 import { ipc } from '../constants/ipcEvents';
 import { postClientsPage } from '../model/clients/postClientsPage';
 import { postPropertiesPage } from '../model/properties/postPropertiesPage';
@@ -10,7 +11,7 @@ import { postDeleteClient } from '../model/clients/postDeleteClient';
 import { postInsertClient } from '../model/clients/postInsertClient';
 import { postPropertiesInfo } from '../model/clients/postPropertiesInfo';
 import { postSelectedClient } from '../model/clients/postSelectedClient';
-import { postUpdateClient } from '../model/clients/postUpdateCleint';
+import { postUpdateClient } from '../model/clients/postUpdateClient';
 import { DBCredentials, checkConnection, connectToDB } from '../model/dbconfig';
 import { getExaminers } from '../model/examiners/getExaminers';
 import { getSelectDropDownOptions } from '../model/management/getSelectDropDownOptions';
@@ -21,7 +22,6 @@ import { postInsertProperty } from '../model/properties/postInsertProperty';
 import { postSelectedProperty } from '../model/properties/postSelectedProperty';
 import { postUpdateProperty } from '../model/properties/postUpdateProperty';
 import { postInsTitlesInfo } from '../model/titles/postInsTitlesInfo';
-import { ipcMain } from 'electron';
 import { getAllUsers } from '../model/users/getAllUsers';
 import { postDeleteUser } from '../model/users/postDeleteUser';
 import { postInsertUser } from '../model/users/postInsertUser';
@@ -39,6 +39,7 @@ import { getDistinctTypeOptions } from '../model/properties/getDistinctTypeOptio
 import { getDistinctAssignOptions } from '../model/properties/getDistinctAssignOptions';
 import { getDistinctCityOptions } from '../model/properties/getDistinctCityOptions';
 import { getDistinctStatusOptions } from '../model/properties/getDistinctStatusOptions';
+import { postPropertyReport } from '../model/reports/postPropertyReport';
 
 export function setupIPCListeners() {
   // Auth
@@ -89,7 +90,7 @@ export function setupIPCListeners() {
 
   ipcMain.on(ipc.postSelectedClient, async (event, payload: string) => {
     const response = await postSelectedClient(payload);
-    event.reply(ipc.postSelectedClient, response.data);
+    event.reply(ipc.postSelectedClient, response);
   });
 
   ipcMain.on(ipc.postUpdateClient, async (event, payload: Client) => {
@@ -97,8 +98,8 @@ export function setupIPCListeners() {
     event.reply(ipc.postUpdateClient, response);
   });
 
-  ipcMain.on(ipc.postDeleteClient, async (event, payload: string) => {
-    const response = await postDeleteClient(payload);
+  ipcMain.on(ipc.postDeleteClient, async (event, id: string) => {
+    const response = await postDeleteClient(id);
     event.reply(ipc.postDeleteClient, response);
   });
 
@@ -108,8 +109,8 @@ export function setupIPCListeners() {
     event.reply(ipc.getLatestUpdatedProperties, properties);
   });
 
-  ipcMain.on(ipc.postDeleteProperty, async (event, payload) => {
-    const response = await postDeleteProperty(payload);
+  ipcMain.on(ipc.postDeleteProperty, async (event, id) => {
+    const response = await postDeleteProperty(id);
     event.reply(ipc.postDeleteProperty, response);
   });
 
@@ -240,13 +241,85 @@ export function setupIPCListeners() {
     event.reply(ipc.postInsertUser, response);
   });
 
-  ipcMain.on(ipc.postSelectedUser, async (event, payload) => {
-    const response = await postSelectedUser(payload);
+  ipcMain.on(ipc.postSelectedUser, async (event, id) => {
+    const response = await postSelectedUser(id);
     event.reply(ipc.postSelectedUser, response);
   });
 
   ipcMain.on(ipc.postUpdateUser, async (event, payload) => {
     const response = await postUpdateUser(payload);
     event.reply(ipc.postUpdateUser, response);
+  });
+
+  // Reports
+  ipcMain.on(ipc.postPropertyReport, async (event, payload) => {
+    const response = await postPropertyReport(payload);
+    event.reply(ipc.postPropertyReport, response);
+  });
+
+  // Printing
+
+  const printOptions = {
+    silent: false,
+    printBackground: true,
+    color: true,
+    margin: {
+      marginType: 'printableArea',
+    },
+    landscape: false,
+    pagesPerSheet: 1,
+    collate: false,
+    copies: 1,
+    header: 'Page header',
+    footer: 'Page footer',
+  };
+
+  ipcMain.handle('printComponent', (event, url) => {
+    let win = new BrowserWindow({ show: false });
+    win.loadURL(url);
+
+    win.webContents.on('did-finish-load', () => {
+      win.webContents.print(printOptions, (success, failureReason) => {
+        console.log('Print Initiated in Main...');
+        if (!success) console.log(failureReason);
+      });
+    });
+    return 'done in main';
+  });
+
+  //handle preview
+  ipcMain.handle('previewComponent', async (event, url) => {
+    let win = new BrowserWindow({
+      title: 'Print Preview',
+      show: false,
+      autoHideMenuBar: true,
+    });
+
+    win.webContents.once('did-finish-load', () => {
+      win.webContents
+        .printToPDF(printOptions)
+        .then((data) => {
+          const buf = Buffer.from(data);
+          // @ts-ignore
+          data = buf.toString('base64');
+          const url = 'data:application/pdf;base64,' + data;
+
+          // @ts-ignore
+          win.webContents.on('ready-to-show', () => {
+            win.once('page-title-updated', (e) => e.preventDefault());
+            win.show();
+          });
+
+          // @ts-ignore
+          win.webContents.on('closed', () => (win = null));
+          win.loadURL(url);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    });
+
+    await win.loadURL(url);
+    return 'shown preview window';
   });
 }

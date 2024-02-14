@@ -29,28 +29,31 @@ const EditUserForm: React.FC<OwnProps> = ({
     handleSubmit,
     reset,
     watch,
+    getValues,
     formState: { errors, isDirty },
   } = useForm({
     defaultValues: async () => {
       if (selectedId) {
         setIsLoading(true);
-        await window.electron.ipcRenderer.sendMessage(ipc.postSelectedUser, {
-          id: selectedId,
-        });
-        await window.electron.ipcRenderer.once(
-          ipc.postSelectedUser,
-          (userInfo) => {
-            setIsLoading(false);
-            setUserId(userInfo.id);
 
-            return {
+        return await new Promise((resolve) => {
+          window.electron.ipcRenderer.sendMessage(
+            ipc.postSelectedUser,
+            selectedId,
+          );
+
+          window.electron.ipcRenderer.once(ipc.postSelectedUser, (userInfo) => {
+            setUserId(userInfo.id);
+            console.log(userInfo);
+            setIsLoading(false);
+            resolve({
               username: userInfo.username,
               l_name: userInfo.l_name,
               f_name: userInfo.f_name,
               is_admin: userInfo.is_admin,
-            };
-          },
-        );
+            });
+          });
+        });
       }
     },
   });

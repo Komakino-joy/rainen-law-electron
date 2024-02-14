@@ -9,11 +9,9 @@ export async function getNewCompRef() {
           FROM ${dbRef.table_names.properties} p;
         `;
     const propertiesResults = (await conn.query(newCompRefQuery)).rows;
-    return {
-      newCompRef: propertiesResults[0].COMPREF,
-    };
+    return propertiesResults[0].p_comp_ref;
   } catch (error) {
     console.log(error);
-    return { message: 'Failed to get properties' };
+    return { message: 'Failed to get new Comp Ref Number' };
   }
 }

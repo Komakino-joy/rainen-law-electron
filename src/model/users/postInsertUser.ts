@@ -71,7 +71,7 @@ export async function postInsertUser(payload: OwnProps) {
       // @ts-ignore
       newPropId: null,
       message: 'Failed to insert record',
-      status: 'failure',
+      status: 'error',
     };
   }
 }

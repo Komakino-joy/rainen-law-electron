@@ -13,38 +13,34 @@ interface Links {
 const links: Links = {
   properties: [
     {
-      href: "/properties/add-new",
-      ctaText: "Create property",
+      href: '/properties/add-new',
+      ctaText: 'Create property',
     },
     {
-      href: "/properties/search",
-      ctaText: "Search for property",
+      href: '/properties/search',
+      ctaText: 'Search for property',
     },
   ],
   clients: [
     {
-      href: "/clients/add-new",
-      ctaText: "Create client",
+      href: '/clients/add-new',
+      ctaText: 'Create client',
     },
     {
-      href: "/clients/search",
-      ctaText: "Search for client",
-    },
-    {
-      href: "/clients/1",
-      ctaText: "View All Clients",
+      href: '/clients/search',
+      ctaText: 'Search for client',
     },
   ],
   reports: [
     {
-      href: "/reports/property-report",
-      ctaText: "Property Report",
+      href: '/reports/property-report',
+      ctaText: 'Property Report',
     },
   ],
   management: [
     {
-      href: "/management",
-      ctaText: "Site Management",
+      href: '/management',
+      ctaText: 'Site Management',
     },
   ],
 };

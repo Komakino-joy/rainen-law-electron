@@ -52,7 +52,6 @@ const ClientsPage = () => {
         await window.electron.ipcRenderer.once(
           ipc.postClientsPage,
           ({ clients, totalRecords, pageSize }) => {
-            console.log({ clients, totalRecords, pageSize });
             setTableData(clients);
             setTotalRecords(totalRecords);
             setPageSize(pageSize);
@@ -73,7 +72,7 @@ const ClientsPage = () => {
   }, [shouldReload, currentPage, isConnectedToDB]);
 
   if (isLoading) return <Spinner containerClassName="page-spinner" />;
-  if (!totalRecords || !pageSize) return <h1>Missing required props</h1>;
+  if (!totalRecords || !pageSize) return <span>No Matching Records Found</span>;
 
   const totalPages = Math.floor(totalRecords / pageSize);
 

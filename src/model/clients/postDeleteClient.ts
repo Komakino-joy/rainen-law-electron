@@ -12,6 +12,7 @@ export async function postDeleteClient(id: string) {
         `,
       [id],
     );
+
     await conn.query(deleteQuery);
     await conn.query('COMMIT');
 

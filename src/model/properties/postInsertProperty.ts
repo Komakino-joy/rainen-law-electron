@@ -45,7 +45,6 @@ export async function postInsertProperty(payload: Property) {
     // We need to get the Client Number from our DB since there is no reference to it in the properties table
     const clientIDQuery = `SELECT cm.c_number FROM ${dbRef.table_names.clients} cm WHERE cm.c_name = ($1)`;
     const clientIdResponse = await conn.query(clientIDQuery, [clientName]);
-
     const addNewBuySellRecord = pgPromise.as.format(
       `
           INSERT INTO ${dbRef.table_names.buyer_seller}
@@ -166,7 +165,7 @@ export async function postInsertProperty(payload: Property) {
       // @ts-ignore
       newPropId: null,
       message: 'Failed to insert record',
-      status: 'failure',
+      status: 'error',
     };
   }
 }

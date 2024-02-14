@@ -6,16 +6,15 @@ import { usePropertiesContext } from '@/context/PropertiesContext';
 const SearchPropertiesPage = () => {
   const { isLoadingClientsContext } = useClientsContext();
   const { isLoadingPropertyContext } = usePropertiesContext();
-  // const isLoading = isLoadingClientsContext || isLoadingPropertyContext;
+  const isLoading = isLoadingClientsContext || isLoadingPropertyContext;
 
   return (
     <div className="search-page center-margin">
-      <PropertySearchForm />
-      {/* {isLoading ? (
+      {isLoading ? (
         <Spinner containerClassName="page-spinner" />
       ) : (
         <PropertySearchForm />
-      )} */}
+      )}
     </div>
   );
 };

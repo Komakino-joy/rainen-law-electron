@@ -4,9 +4,11 @@ import toast from 'react-hot-toast';
 import { useTable, useFilters, useSortBy } from 'react-table';
 import InfoCard from '@/components/InfoCard/InfoCard';
 import PrintClientLabelMultiple from '@/components/PrintClientLabelMultiple/PrintClientLabelMultiple';
-import { useIsAdmin } from '~/context/AuthContext';
-import { Client, ModalType } from '~/contracts';
 import { ipc } from '~/constants/ipcEvents';
+import { dbRef } from '~/constants/dbRefs';
+import { useIsAdmin } from '~/context/AuthContext';
+import { useFetchClientList } from '~/context/ClientsContext';
+import { Client, ModalType } from '~/contracts';
 import {
   DownArrowIcon,
   PencilIcon,
@@ -14,9 +16,7 @@ import {
   TrashIcon,
   UpArrowIcon,
 } from '~/icons/Icons';
-
 import './ClientsTable.scss';
-import { dbRef } from '~/constants/dbRefs';
 
 interface OwnProps {
   tableData: any;
@@ -38,6 +38,7 @@ const ClientsTable: React.FC<OwnProps> = ({
   tableData,
 }) => {
   const isAdmin = useIsAdmin();
+  const updateClientList = useFetchClientList();
   const [labelsToPrint, setLabelsToPrint] = useState<Client[]>([]);
 
   const handleDelete = (e: React.SyntheticEvent, id: string) => {
@@ -50,19 +51,20 @@ const ClientsTable: React.FC<OwnProps> = ({
         {
           label: 'Yes',
           onClick: async () => {
-            await window.electron.ipcRenderer.sendMessage(ipc.postDeleteClient);
+            await window.electron.ipcRenderer.sendMessage(
+              ipc.postDeleteClient,
+              id,
+            );
             await window.electron.ipcRenderer.once(
               ipc.postDeleteClient,
-              (response) => {
-                if (response.status === 'success') {
-                  toast.success(response.message, { id: 'delete-client' });
+              ({ message, status }) => {
+                toast[status](message, { id: 'delete-client' });
+                if (status === 'success') {
                   const filteredArray = tableData.filter(
-                    (row: Client) => row.id.toString() !== id,
+                    (row: Client) => row.id.toString() !== id.toString(),
                   );
                   setTableData(filteredArray);
-                }
-                if (response.status === 'error') {
-                  toast.error(response.message, { id: 'delete-client' });
+                  updateClientList();
                 }
               },
             );
@@ -187,7 +189,7 @@ const ClientsTable: React.FC<OwnProps> = ({
           ) : null,
       },
     ],
-    [handleModalOpen, isAdmin],
+    [handleModalOpen, isAdmin, tableData],
   );
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =

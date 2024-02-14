@@ -1,0 +1,43 @@
+.property-page-content {
+  align-items: center;
+}
+
+.info-section {
+  width: 800px;
+}
+
+.property-report-wrapper {
+  position: relative;
+
+  .print-report-button {
+    position: absolute;
+    top: 20px;
+    right: 0px;
+  }
+}
+
+.property-report-printable-area {
+  header {
+    margin: 20px 0px 10px 0px;
+    text-align: center;
+  }
+  
+  p {
+    font-size: 18px;
+    font-weight: 500;
+  }
+  
+  span {
+    font-size: 14px;
+  }
+  
+  .total {
+    font-size: 14px;
+    margin-top: 5px;
+    display: inline-block;
+    font-weight: 500;
+    width: 100%;
+    text-align: center;
+    padding-left: 10px;
+  }
+}

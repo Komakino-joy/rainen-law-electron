@@ -19,7 +19,6 @@ interface OwnProps {
 
 const SubTableProperties: React.FC<OwnProps> = ({ cnmbr }) => {
   const navigate = useNavigate();
-
   const [tableData, setTableData] = useState([]);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);

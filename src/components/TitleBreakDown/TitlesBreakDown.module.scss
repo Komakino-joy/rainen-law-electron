@@ -1,0 +1,40 @@
+.titles-breakdown-container {
+  margin: 20px auto 0 auto;
+  width: fit-content;
+  padding: 10px;
+}
+
+.title-detail,
+.column-footer {
+  display: flex;
+
+  width: 300px;
+
+  display: flex;
+  
+  
+  span {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    line-height: 25px;
+
+    &:nth-child(1) {
+      flex: 1;
+      text-align: left;
+    }
+
+    &:nth-child(2) {
+      flex: .8;
+      text-align: center;
+    }
+
+    &:nth-child(3) {
+      flex: .8;
+      text-align: right;
+    }
+
+  }
+}
+
+.column-footer {
+  border-top: 1px solid rgba(0, 0, 0, 0.089);
+}

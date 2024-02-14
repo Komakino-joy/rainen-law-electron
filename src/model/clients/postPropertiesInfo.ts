@@ -13,7 +13,9 @@ export async function postPropertiesInfo(c_number: string) {
               p.${dbRef.properties.p_city},
               p.${dbRef.properties.p_street};
           `;
-    const result = await conn.query(getClientPropertyInfoQuery, [c_number]);
+    const result = await conn.query(getClientPropertyInfoQuery, [
+      Number(c_number),
+    ]);
     return result.rows;
   } catch (error) {
     console.log(error);

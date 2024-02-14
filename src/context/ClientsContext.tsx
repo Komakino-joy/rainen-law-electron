@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import {
+  Dispatch,
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { ipc } from '~/constants/ipcEvents';
 import { Client, LabelValuePair } from '~/contracts';
 import { hasValue, uniqueLabelValuePairs } from '~/utils';
@@ -6,6 +13,7 @@ import { useIsConnectedToDB } from './DatabaseContext';
 
 interface OwnProps {
   isLoadingClientsContext: boolean;
+  setShouldFetch: Dispatch<boolean>;
   clientSelectOptions: {
     c_name: [{ label: string; value: string }];
     c_number: [{ label: string; value: string }];
@@ -23,6 +31,7 @@ interface OwnProps {
 
 const ClientsContext = createContext<OwnProps>({
   isLoadingClientsContext: false,
+  setShouldFetch: () => {},
   clientSelectOptions: {
     c_name: [{ label: '', value: '' }],
     c_number: [{ label: '', value: '' }],
@@ -40,6 +49,7 @@ const ClientsContext = createContext<OwnProps>({
 
 export const ClientsContextProvider = ({ children }: { children: any }) => {
   const isConnectedToDB = useIsConnectedToDB();
+  const [shouldFetch, setShouldFetch] = useState(true);
   const [isLoadingClientsContext, setIsLoading] = useState<boolean>(false);
   const [clientSelectOptions, setclientSelectOptions] = useState<any>([]);
   const mounted = useRef(false);
@@ -102,20 +112,24 @@ export const ClientsContextProvider = ({ children }: { children: any }) => {
           return a.value - b.value;
         });
 
+        console.log(clientsObject);
+
         setclientSelectOptions(clientsObject);
         setIsLoading(false);
+        setShouldFetch(false);
       });
     }
-    if (mounted.current && isConnectedToDB) fetchClientsContextData();
+    if (mounted.current && isConnectedToDB && shouldFetch)
+      fetchClientsContextData();
 
     return () => {
       mounted.current = false;
     };
-  }, [isConnectedToDB]);
+  }, [isConnectedToDB, shouldFetch]);
 
   return (
     <ClientsContext.Provider
-      value={{ clientSelectOptions, isLoadingClientsContext }}
+      value={{ clientSelectOptions, isLoadingClientsContext, setShouldFetch }}
     >
       {children}
     </ClientsContext.Provider>
@@ -123,3 +137,8 @@ export const ClientsContextProvider = ({ children }: { children: any }) => {
 };
 
 export const useClientsContext = () => useContext(ClientsContext);
+
+export const useFetchClientList = () => {
+  const client = useContext(ClientsContext);
+  return () => client.setShouldFetch(true);
+};

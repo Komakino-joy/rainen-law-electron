@@ -8,11 +8,13 @@ import { dbRef } from '~/constants/dbRefs';
 import { useClientsContext } from '~/context/ClientsContext';
 import { usePropertiesContext } from '~/context/PropertiesContext';
 import FormInput from '../FormInput/FormInput';
+import Spinner from '@/components/Spinner/Spinner';
 
 const PropertySearchForm = () => {
   const navigate = useNavigate();
 
-  const { propertiesSelectOptions } = usePropertiesContext();
+  const { propertiesSelectOptions, isLoadingPropertyContext } =
+    usePropertiesContext();
   const { clientSelectOptions } = useClientsContext();
 
   const [clearSelectInputBoxes, setClearSelectInputBoxes] = useState(false);
@@ -38,6 +40,9 @@ const PropertySearchForm = () => {
       navigate('/properties/1');
     }
   };
+
+  if (isLoadingPropertyContext)
+    return <Spinner containerClassName="page-spinner" />;
 
   return (
     <div className="form-wrapper search-form">

@@ -17,10 +17,12 @@ import {
   abbreviatedStatesLabelValuePair,
   updateAddressSuffix,
   dateToString,
+  convertNullsToStrings,
 } from '~/utils';
 
 import { useClientsContext } from '~/context/ClientsContext';
 import { useExaminersContext } from '~/context/ExaminersContext';
+import { useFetchPropertiesLists } from '~/context/PropertiesContext';
 import { useSelectDropDownsContext } from '~/context/SelectDropDownsContext';
 
 import 'react-tabs/style/react-tabs.css';
@@ -39,7 +41,7 @@ const EditPropertyForm: React.FC<OwnProps> = ({
   handleAfterSubmit = () => {},
 }) => {
   const user = useUser();
-
+  const fetchPropertyLists = useFetchPropertiesLists();
   const { examinersDropDownOptions } = useExaminersContext();
   const { clientSelectOptions } = useClientsContext();
   const {
@@ -53,20 +55,20 @@ const EditPropertyForm: React.FC<OwnProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [printLabelInfo, setPrintLabelInfo] = useState({});
   const [defaultSelectValues, setDefaultSelectValues] = useState({
-    assigned: '',
-    city: '',
-    clientName: '',
-    county: '',
-    state: 'MA',
-    status: '',
-    type: '',
+    p_assign: '',
+    p_city: '',
+    c_name: '',
+    p_county: '',
+    p_state: 'MA',
+    p_status: '',
+    p_type: '',
   });
 
   const [propertyInfoSnippet, setPropertyInfoSnippet] = useState<{
     id: string;
     address: string;
     p_number: string | null;
-    compRef: string | null;
+    p_comp_ref: string | null;
     lastUpdated: {
       date: string;
       time: string;
@@ -75,7 +77,7 @@ const EditPropertyForm: React.FC<OwnProps> = ({
     id: '',
     address: '',
     p_number: '',
-    compRef: null,
+    p_comp_ref: null,
     lastUpdated: null,
   });
 
@@ -92,144 +94,67 @@ const EditPropertyForm: React.FC<OwnProps> = ({
       if (propertyId) {
         setIsLoading(true);
 
-        await window.electron.ipcRenderer.sendMessage(
-          ipc.postSelectedProperty,
-          propertyId,
-        );
-        await window.electron.ipcRenderer.once(
-          ipc.postSelectedProperty,
-          (response) => {
-            const {
-              id = '',
-              p_city = '',
-              p_street = '',
-              p_state = '',
-              p_zip = '',
-              p_book_1 = '',
-              p_book_2 = '',
-              p_page_1 = '',
-              p_page_2 = '',
-              p_cert_1 = '',
-              p_lot = '',
-              p_condo = '',
-              p_county = '',
-              p_unit = '',
-              p_status = '',
-              p_type = '',
-              p_assign = '',
-              c_name = '',
-              p_comp_ref = '',
-              p_file = '',
-              c_file = '',
-              p_requester = '',
-              p_request_date = '',
-              p_closed_date = '',
-              p_instructions = '',
-              last_updated = '',
-              p_number = '',
-              p_input_date = '',
-              seller_1 = '',
-              seller_2 = '',
-              seller_3 = '',
-              seller_4 = '',
-              buyer_1 = '',
-              buyer_2 = '',
-            } = response;
+        return await new Promise((resolve) => {
+          window.electron.ipcRenderer.sendMessage(
+            ipc.postSelectedProperty,
+            propertyId,
+          );
 
-            setPrintLabelInfo((prevState) => ({
-              ...prevState,
-              p_request_date,
-              p_type,
-              p_input_date,
-              p_comp_ref,
-              p_unit,
-              p_condo,
-              p_book_1,
-              p_book_2,
-              p_page_1,
-              c_file,
-              p_page_2,
-              p_cert_1,
-              seller_1,
-              seller_2,
-              seller_3,
-              seller_4,
-              buyer_1,
-              buyer_2,
-              p_instructions,
-              c_name,
-              p_requester,
-            }));
+          window.electron.ipcRenderer.once(
+            ipc.postSelectedProperty,
+            (response) => {
+              const {
+                p_city = '',
+                p_street = '',
+                c_name = '',
+                p_request_date = '',
+                p_closed_date = '',
+                last_updated = '',
+              } = response;
 
-            setPropertyInfoSnippet((prevState) => ({
-              ...prevState,
-              id: id,
-              p_number: p_number,
-              address: `${p_city} / ${p_street}`,
-              compRef: p_comp_ref,
-              lastUpdated: last_updated
-                ? timestampToDate(last_updated, 'mmDDyyyy')
-                : null,
-            }));
+              setPrintLabelInfo((prevState) => ({
+                ...prevState,
+                ...response,
+              }));
 
-            setIsLoading(false);
+              setPropertyInfoSnippet((prevState) => ({
+                ...prevState,
+                ...response,
+                address: `${p_city} / ${p_street}`,
+                lastUpdated: last_updated
+                  ? timestampToDate(last_updated, 'mmDDyyyy')
+                  : null,
+              }));
 
-            setDefaultSelectValues({
-              assigned: p_assign || '',
-              city: p_city || '',
-              clientName: c_name || '',
-              county: p_county || '',
-              state: p_state || '',
-              status: p_status || '',
-              type: p_type || '',
-            });
+              setDefaultSelectValues({
+                ...(convertNullsToStrings(response) as any),
+              });
 
-            return {
-              p_state,
-              p_status,
-              p_type,
-              p_assign,
-              clientName: c_name,
-              p_city,
-              p_zip,
-              p_book_1,
-              p_book_2,
-              p_page_1,
-              p_page_2,
-              p_cert_1,
-              p_street,
-              p_lot,
-              p_condo,
-              p_county,
-              p_unit,
-              p_comp_ref,
-              p_file,
-              c_file,
-              p_requester,
-              p_request_date: p_request_date
-                ? dateToString(p_request_date)
-                : null,
-              p_closed_date: p_closed_date ? dateToString(p_closed_date) : null,
-              p_instructions,
-              buyer_1,
-              buyer_2,
-              seller_1,
-              seller_2,
-              seller_3,
-              seller_4,
-            };
-          },
-        );
+              setIsLoading(false);
+              resolve({
+                ...convertNullsToStrings(response),
+                clientName: c_name,
+                p_request_date: p_request_date
+                  ? dateToString(p_request_date)
+                  : null,
+                p_closed_date: p_closed_date
+                  ? dateToString(p_closed_date)
+                  : null,
+              });
+            },
+          );
+        });
       } else if (queryType === 'insert') {
-        await window.electron.ipcRenderer.sendMessage(ipc.getNewCompRef);
-        await window.electron.ipcRenderer.once(
-          ipc.getNewCompRef,
-          (response) => {
-            return {
+        return await new Promise((resolve) => {
+          setIsLoading(true);
+          window.electron.ipcRenderer.sendMessage(ipc.getNewCompRef);
+          window.electron.ipcRenderer.once(ipc.getNewCompRef, (response) => {
+            resolve({
               p_comp_ref: response,
-            };
-          },
-        );
+            });
+          });
+          setIsLoading(false);
+        });
       }
     },
   });
@@ -245,16 +170,18 @@ const EditPropertyForm: React.FC<OwnProps> = ({
 
     if (queryType === 'insert') {
       await window.electron.ipcRenderer.sendMessage(ipc.postInsertProperty, {
-        data,
+        ...data,
         username: user ? user.username : 'N/A',
       });
       await window.electron.ipcRenderer.once(
         ipc.postInsertProperty,
-        (response) => {
-          reset();
-          handleAfterSubmit(response.newPropId);
-          // @ts-ignore
-          toast[response.status](response.message);
+        ({ newPropId, message, status }) => {
+          toast[status](message, { id: 'insert-property' });
+          if (status === 'success') {
+            reset();
+            handleAfterSubmit(newPropId);
+            fetchPropertyLists();
+          }
         },
       );
     }
@@ -269,18 +196,20 @@ const EditPropertyForm: React.FC<OwnProps> = ({
               await window.electron.ipcRenderer.sendMessage(
                 ipc.postUpdateProperty,
                 {
-                  data,
+                  ...data,
                   id: propertyInfoSnippet.id, // Passing id to update correct record
                   username: user ? user.username : 'N/A',
                 },
               );
               await window.electron.ipcRenderer.once(
                 ipc.postUpdateProperty,
-                (response) => {
-                  handleAfterSubmit(propertyInfoSnippet.id);
-                  reset(response.updatedRecord);
-                  // @ts-ignore
-                  toast[response.status](response.message);
+                ({ updatedRecord, message, status }) => {
+                  toast[status](message, { id: 'update-property' });
+                  if (status === 'success') {
+                    handleAfterSubmit(propertyInfoSnippet.id);
+                    reset(updatedRecord);
+                    fetchPropertyLists();
+                  }
                 },
               );
             },
@@ -309,8 +238,8 @@ const EditPropertyForm: React.FC<OwnProps> = ({
     <div className="form-wrapper edit-form">
       <header>
         <span>{propertyInfoSnippet.address}</span>
-        {propertyInfoSnippet.compRef ? (
-          <span>Property Ref#: {propertyInfoSnippet.compRef}</span>
+        {propertyInfoSnippet.p_comp_ref ? (
+          <span>Property Ref#: {propertyInfoSnippet.p_comp_ref}</span>
         ) : null}
       </header>
       {isLoading ? (
@@ -334,7 +263,7 @@ const EditPropertyForm: React.FC<OwnProps> = ({
                         labelKey={dbRef.properties.p_state}
                         labelText="State"
                         type="select"
-                        defaultValue={defaultSelectValues.state}
+                        defaultValue={defaultSelectValues.p_state}
                         customClass="state"
                         selectOnChange={onChange}
                         options={abbreviatedStatesLabelValuePair}
@@ -358,7 +287,7 @@ const EditPropertyForm: React.FC<OwnProps> = ({
                         labelKey={dbRef.properties.p_city}
                         labelText="City"
                         type="select"
-                        defaultValue={defaultSelectValues.city}
+                        defaultValue={defaultSelectValues.p_city}
                         customClass="city"
                         selectOnChange={onChange}
                         options={cityDropDownOptions}
@@ -382,7 +311,7 @@ const EditPropertyForm: React.FC<OwnProps> = ({
                         labelKey={dbRef.properties.p_county}
                         labelText="County"
                         type="select"
-                        defaultValue={defaultSelectValues.county}
+                        defaultValue={defaultSelectValues.p_county}
                         customClass="county"
                         selectOnChange={onChange}
                         options={countyDropDownOptions}
@@ -540,7 +469,7 @@ const EditPropertyForm: React.FC<OwnProps> = ({
                           name={dbRef.properties.p_status}
                           labelKey={dbRef.properties.p_status}
                           labelText="Status"
-                          defaultValue={defaultSelectValues.status}
+                          defaultValue={defaultSelectValues.p_status}
                           type="select"
                           selectOnChange={onChange}
                           options={propertyStatusDropDownOptions}
@@ -565,7 +494,7 @@ const EditPropertyForm: React.FC<OwnProps> = ({
                           name={dbRef.properties.p_type}
                           labelKey={dbRef.properties.p_type}
                           labelText="Type"
-                          defaultValue={defaultSelectValues.type}
+                          defaultValue={defaultSelectValues.p_type}
                           type="select"
                           selectOnChange={onChange}
                           options={propertyTypeDropDownOptions}
@@ -668,7 +597,7 @@ const EditPropertyForm: React.FC<OwnProps> = ({
                         labelKey="clientName"
                         labelText="Client Name"
                         type="select"
-                        defaultValue={defaultSelectValues.clientName}
+                        defaultValue={defaultSelectValues.c_name}
                         customClass="clientName"
                         selectOnChange={onChange}
                         options={clientNames}
@@ -733,7 +662,7 @@ const EditPropertyForm: React.FC<OwnProps> = ({
                           labelKey={dbRef.properties.p_assign}
                           labelText="Assigned"
                           type="select"
-                          defaultValue={defaultSelectValues.assigned}
+                          defaultValue={defaultSelectValues.p_assign}
                           customClass="assigned"
                           selectOnChange={onChange}
                           options={examinersDropDownOptions}
@@ -771,7 +700,7 @@ const EditPropertyForm: React.FC<OwnProps> = ({
                       labelKey={dbRef.properties.p_request_date}
                       labelText="Request Date"
                       type="date"
-                      defaultValue={defaultSelectValues.assigned}
+                      defaultValue={defaultSelectValues.p_assign}
                       isRequired={false}
                       // @ts-ignore
                       register={register}
@@ -793,7 +722,7 @@ const EditPropertyForm: React.FC<OwnProps> = ({
                       labelKey={dbRef.properties.p_closed_date}
                       labelText="Closed Date"
                       type="date"
-                      defaultValue={defaultSelectValues.assigned}
+                      defaultValue={defaultSelectValues.p_assign}
                       isRequired={false}
                       // @ts-ignore
                       register={register}
@@ -841,14 +770,14 @@ const EditPropertyForm: React.FC<OwnProps> = ({
           </footer>
         </form>
       )}
-      {queryType === 'update' && propertyInfoSnippet.compRef ? (
+      {queryType === 'update' && propertyInfoSnippet.p_comp_ref ? (
         <Tabs>
           <TabList>
             <Tab>Seller / Buyer</Tab>
           </TabList>
 
           <TabPanel>
-            <SubTableSellerBuyer compRef={propertyInfoSnippet.compRef} />
+            <SubTableSellerBuyer compRef={propertyInfoSnippet.p_comp_ref} />
           </TabPanel>
         </Tabs>
       ) : null}

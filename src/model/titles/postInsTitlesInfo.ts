@@ -19,7 +19,7 @@ export async function postInsTitlesInfo(inmbr: string) {
               ${dbRef.insurance_titles.i_street},
               ${dbRef.insurance_titles.i_lot};
           `;
-    const result = await conn.query(getInsTitlesInfoQuery, [inmbr]);
+    const result = await conn.query(getInsTitlesInfoQuery, [Number(inmbr)]);
 
     return {
       titles: result.rows,

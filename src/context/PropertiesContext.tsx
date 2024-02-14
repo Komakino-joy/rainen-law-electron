@@ -1,10 +1,18 @@
 import { ipc } from '@/constants/ipcEvents';
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import {
+  Dispatch,
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { LabelValuePair } from '~/contracts';
 import { useIsConnectedToDB } from './DatabaseContext';
 
 interface OwnProps {
   isLoadingPropertyContext: boolean;
+  setShouldFetch: Dispatch<boolean>;
   propertiesSelectOptions: {
     p_city: LabelValuePair[];
     p_type: LabelValuePair[];
@@ -15,6 +23,7 @@ interface OwnProps {
 
 const PropertiesContext = createContext<OwnProps>({
   isLoadingPropertyContext: false,
+  setShouldFetch: () => {},
   propertiesSelectOptions: {
     p_city: [],
     p_type: [],
@@ -25,74 +34,70 @@ const PropertiesContext = createContext<OwnProps>({
 
 export const PropertiesContextProvider = ({ children }: { children: any }) => {
   const isConnectedToDB = useIsConnectedToDB();
+  const [shouldFetch, setShouldFetch] = useState(true);
   const [isLoadingPropertyContext, setIsLoading] = useState<boolean>(false);
   const [propResponseMap, setPropResponseMap] = useState({});
 
   const mounted = useRef(false);
+
   useEffect(() => {
     mounted.current = true;
+
     async function fetchPropertiesContext() {
       setIsLoading(true);
+      const cities = await new Promise((resolve) => {
+        window.electron.ipcRenderer.sendMessage(ipc.getDistinctCityOptions);
 
-      const propertiesResponseMap = {
-        p_city: [],
-        p_type: [],
-        p_status: [],
-        p_assign: [],
-      };
+        window.electron.ipcRenderer.once(ipc.getDistinctCityOptions, (cities) =>
+          resolve(cities),
+        );
+      });
 
-      await window.electron.ipcRenderer.sendMessage(ipc.getDistinctCityOptions);
-      await window.electron.ipcRenderer.once(
-        ipc.getDistinctCityOptions,
-        (cities) => {
-          propertiesResponseMap.p_city = cities;
-        },
-      );
+      const types = await new Promise((resolve) => {
+        window.electron.ipcRenderer.sendMessage(
+          ipc.getDistinctPropertyTypeOptions,
+        );
+        window.electron.ipcRenderer.once(
+          ipc.getDistinctPropertyTypeOptions,
+          (types) => resolve(types),
+        );
+      });
 
-      await window.electron.ipcRenderer.sendMessage(
-        ipc.getDistinctPropertyTypeOptions,
-      );
-      await window.electron.ipcRenderer.once(
-        ipc.getDistinctPropertyTypeOptions,
-        (types) => {
-          propertiesResponseMap.p_type = types;
-          setPropResponseMap((prevState) => ({
-            ...prevState,
-            p_type: types,
-          }));
-        },
-      );
+      const statuses = await new Promise((resolve) => {
+        window.electron.ipcRenderer.sendMessage(ipc.getDistinctStatusOptions);
+        window.electron.ipcRenderer.once(
+          ipc.getDistinctStatusOptions,
+          (statuses) => resolve(statuses),
+        );
+      });
 
-      await window.electron.ipcRenderer.sendMessage(
-        ipc.getDistinctStatusOptions,
-      );
-      await window.electron.ipcRenderer.once(
-        ipc.getDistinctStatusOptions,
-        (statuses) => {
-          propertiesResponseMap.p_status = statuses;
-        },
-      );
+      const assignTypes = await new Promise((resolve) => {
+        window.electron.ipcRenderer.sendMessage(ipc.getDistinctAssignOptions);
+        window.electron.ipcRenderer.once(
+          ipc.getDistinctAssignOptions,
+          (assignTypes) => resolve(assignTypes),
+        );
+      });
 
-      await window.electron.ipcRenderer.sendMessage(
-        ipc.getDistinctAssignOptions,
-      );
-      await window.electron.ipcRenderer.once(
-        ipc.getDistinctAssignOptions,
-        (assignTypes) => {
-          propertiesResponseMap.p_assign = assignTypes;
-        },
-      );
+      setPropResponseMap((prevState) => ({
+        ...prevState,
+        p_city: cities,
+        p_type: types,
+        p_status: statuses,
+        p_assign: assignTypes,
+      }));
 
-      setPropResponseMap(propertiesResponseMap);
       setIsLoading(false);
+      setShouldFetch(false);
     }
 
-    if (mounted.current && isConnectedToDB) fetchPropertiesContext();
+    if (mounted.current && isConnectedToDB && shouldFetch)
+      fetchPropertiesContext();
 
     return () => {
       mounted.current = false;
     };
-  }, [isConnectedToDB]);
+  }, [isConnectedToDB, shouldFetch]);
 
   const propertiesSelectOptions = Object.keys(propResponseMap).reduce(
     (acc: any, fieldName: any) => {
@@ -107,7 +112,11 @@ export const PropertiesContextProvider = ({ children }: { children: any }) => {
 
   return (
     <PropertiesContext.Provider
-      value={{ propertiesSelectOptions, isLoadingPropertyContext }}
+      value={{
+        setShouldFetch,
+        propertiesSelectOptions,
+        isLoadingPropertyContext,
+      }}
     >
       {children}
     </PropertiesContext.Provider>
@@ -115,3 +124,8 @@ export const PropertiesContextProvider = ({ children }: { children: any }) => {
 };
 
 export const usePropertiesContext = () => useContext(PropertiesContext);
+
+export const useFetchPropertiesLists = () => {
+  const properties = useContext(PropertiesContext);
+  return () => properties.setShouldFetch(true);
+};

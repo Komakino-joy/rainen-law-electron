@@ -35,5 +35,6 @@ root.render(
       </DatabaseContextProvider>
     </BrowserRouter>
     <Toaster />
+    <div id="modal-root"></div>
   </>,
 );

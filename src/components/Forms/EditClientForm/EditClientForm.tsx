@@ -9,19 +9,15 @@ import PrintClientLabel from '@/components/PrintClientLabel/PrintClientLabel';
 import Spinner from '@/components/Spinner/Spinner';
 import SubTableINS from '@/components/Tables/SubTableINS/SubTableINS';
 import SubTableProperties from '@/components/Tables/SubTableProperties/SubTableProperties';
-import {
-  ClientStatusCodeMapType,
-  CLIENT_STATUS_CODES_MAP,
-  FORM_BUTTON_TEXT,
-} from '~/constants';
+import { FORM_BUTTON_TEXT } from '~/constants';
+import { ipc } from '~/constants/ipcEvents';
 import { useUser } from '~/context/AuthContext';
+import { useFetchClientList } from '~/context/ClientsContext';
 import { useSelectDropDownsContext } from '~/context/SelectDropDownsContext';
-import { timestampToDate } from '~/utils';
+import { Client, ClientInfoSnippet } from '~/contracts';
+import { convertNullsToStrings, timestampToDate } from '~/utils';
 import { abbreviatedStatesLabelValuePair } from '~/utils/UnitedStates';
 import './EditClientForm.scss';
-import { Client, ClientInfoSnippet, DateTime } from '~/contracts';
-import { ipc } from '~/constants/ipcEvents';
-import { dbRef } from '~/constants/dbRefs';
 
 interface OwnProps {
   clientId: string | null;
@@ -35,6 +31,7 @@ const ClientForm: React.FC<OwnProps> = ({
   handleAfterSubmit = () => {},
 }) => {
   const user = useUser();
+  const updateClientList = useFetchClientList();
   const { clientStatusDropDownOptions } = useSelectDropDownsContext();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [titlescount, settitlescount] = useState(null);
@@ -57,84 +54,46 @@ const ClientForm: React.FC<OwnProps> = ({
     handleSubmit,
     reset,
     control,
-    formState: { errors, isDirty, isValid },
+    formState: { errors, isValid },
   } = useForm({
     defaultValues: async () => {
       if (clientId) {
-        setIsLoading(true);
+        return await new Promise((resolve) => {
+          setIsLoading(true);
+          window.electron.ipcRenderer.sendMessage(
+            ipc.postSelectedClient,
+            clientId,
+          );
 
-        await window.electron.ipcRenderer.sendMessage(
-          ipc.postSelectedClient,
-          clientId,
-        );
-        await window.electron.ipcRenderer.once(
-          ipc.postSelectedClient,
-          (clientInfo) => {
-            const {
-              id = '',
-              c_number = '',
-              c_name = '',
-              last_updated = null,
-              c_status = '',
-              c_address_1 = '',
-              c_address_2 = '',
-              c_city = '',
-              c_state = '',
-              c_zip = '',
-              c_phone = '',
-              c_fax = '',
-              c_email = '',
-              c_contact = '',
-              c_statement_addressee = '',
-              c_notes = '',
-            } = clientInfo;
+          window.electron.ipcRenderer.once(
+            ipc.postSelectedClient,
+            (clientInfo) => {
+              const { c_number = '', last_updated = null } = clientInfo;
 
-            setPrintLabelInfo((prevState) => ({
-              ...prevState,
-              c_name,
-              c_address_1,
-              c_address_2,
-              c_city,
-              c_state,
-              c_zip,
-            }));
+              setPrintLabelInfo((prevState) => ({
+                ...prevState,
+                ...clientInfo,
+              }));
 
-            setClientInfoSnippet((prevState) => ({
-              ...prevState,
-              id: id,
-              c_number: c_number.toString(),
-              c_name: c_name,
-              last_updated: last_updated
-                ? timestampToDate(last_updated, 'mmDDyyyy')
-                : null,
-            }));
+              setClientInfoSnippet((prevState) => ({
+                ...prevState,
+                ...clientInfo,
+                c_number: c_number.toString(),
+                last_updated: last_updated
+                  ? timestampToDate(last_updated, 'mmDDyyyy')
+                  : null,
+              }));
 
-            setIsLoading(false);
+              setDefaultSelectValues({
+                ...(convertNullsToStrings(clientInfo) as any),
+              });
 
-            setDefaultSelectValues({
-              c_status:
-                CLIENT_STATUS_CODES_MAP[c_status as ClientStatusCodeMapType] ||
-                '',
-              c_state: c_state || '',
-            });
+              setIsLoading(false);
 
-            return {
-              c_name: c_name,
-              c_status: c_status,
-              c_address_1: c_address_1,
-              c_address_2: c_address_2,
-              c_city: c_city,
-              c_state: c_state,
-              c_zip: c_zip,
-              c_phone: c_phone,
-              c_fax: c_fax,
-              c_email: c_email,
-              c_contact: c_contact,
-              c_statement_addressee: c_statement_addressee,
-              c_notes: c_notes,
-            };
-          },
-        );
+              resolve({ ...convertNullsToStrings(clientInfo) });
+            },
+          );
+        });
       }
     },
   });
@@ -144,14 +103,18 @@ const ClientForm: React.FC<OwnProps> = ({
   const onSubmit = async (data: Partial<Client>) => {
     if (queryType === 'insert') {
       await window.electron.ipcRenderer.sendMessage(ipc.postInsertClient, {
-        data,
+        ...data,
         username: user.username,
       });
       await window.electron.ipcRenderer.once(
         ipc.postInsertClient,
-        (newClientId) => {
-          reset();
+        ({ newClientId, status, message }) => {
           handleAfterSubmit(newClientId);
+          if (status !== 'error') {
+            toast[status](message, { id: 'client-insert' });
+            reset();
+            updateClientList();
+          }
         },
       );
     }
@@ -166,16 +129,20 @@ const ClientForm: React.FC<OwnProps> = ({
               await window.electron.ipcRenderer.sendMessage(
                 ipc.postUpdateClient,
                 {
-                  data,
+                  ...data,
                   id: clientInfoSnippet.id, // Passing id to update correct record
                   username: user.username,
                 },
               );
               await window.electron.ipcRenderer.once(
                 ipc.postUpdateClient,
-                (updatedRecord) => {
-                  handleAfterSubmit(clientInfoSnippet.id);
-                  reset(updatedRecord);
+                ({ updatedRecord, message, status }) => {
+                  toast[status](message, { id: 'updated-client' });
+                  if (status !== 'error') {
+                    handleAfterSubmit(clientInfoSnippet.id);
+                    reset(updatedRecord);
+                    updateClientList();
+                  }
                 },
               );
             },
@@ -199,8 +166,6 @@ const ClientForm: React.FC<OwnProps> = ({
         id: 'client-form-error',
       });
   };
-
-  type ClientInfoKeys = keyof typeof clientInfoSnippet;
 
   return (
     <div className="form-wrapper edit-form">
@@ -407,28 +372,11 @@ const ClientForm: React.FC<OwnProps> = ({
           </section>
 
           <footer className="form-footer">
-            {clientInfoSnippet[
-              dbRef.clients.last_updated as ClientInfoKeys
-            ] && (
+            {clientInfoSnippet.last_updated && (
               <>
-                <span>
-                  Last Updated:{' '}
-                  {
-                    (
-                      clientInfoSnippet[
-                        dbRef.clients.last_updated as ClientInfoKeys
-                      ] as DateTime
-                    ).date
-                  }
-                </span>
+                <span>Last Updated: {clientInfoSnippet.last_updated.date}</span>
                 <span className="italicized-text">
-                  {
-                    (
-                      clientInfoSnippet[
-                        dbRef.clients.last_updated as ClientInfoKeys
-                      ] as DateTime
-                    ).time
-                  }
+                  {clientInfoSnippet.last_updated.time}
                 </span>
               </>
             )}
@@ -436,8 +384,7 @@ const ClientForm: React.FC<OwnProps> = ({
         </form>
       )}
 
-      {queryType === 'update' &&
-      clientInfoSnippet[dbRef.clients.c_number as ClientInfoKeys] ? (
+      {queryType === 'update' && clientInfoSnippet.c_number ? (
         <Tabs>
           <TabList>
             <Tab>Properties</Tab>
@@ -452,22 +399,12 @@ const ClientForm: React.FC<OwnProps> = ({
           </TabList>
 
           <TabPanel>
-            <SubTableProperties
-              cnmbr={(
-                clientInfoSnippet[
-                  dbRef.clients.c_number as ClientInfoKeys
-                ] as string
-              ).toString()}
-            />
+            <SubTableProperties cnmbr={clientInfoSnippet.c_number.toString()} />
           </TabPanel>
 
           <TabPanel>
             <SubTableINS
-              inmbr={(
-                clientInfoSnippet[
-                  dbRef.clients.c_number as ClientInfoKeys
-                ] as string
-              ).toString()}
+              inmbr={clientInfoSnippet.c_number.toString()}
               settitlescount={settitlescount}
             />
           </TabPanel>

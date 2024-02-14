@@ -11,6 +11,7 @@ export async function postUpdateProperty(payload: Property) {
     p_street,
     p_lot,
     p_condo,
+    p_county,
     p_unit,
     p_book_1,
     p_book_2,
@@ -44,8 +45,7 @@ export async function postUpdateProperty(payload: Property) {
     await conn.query('BEGIN');
 
     // We need to get the Client Number from our DB since there is no reference to it in the properties table
-    const clientIDQuery =
-      'SELECT cm.c_number FROM ${dbRefs.table_names.clients} cm WHERE cm.c_name = ($1)';
+    const clientIDQuery = `SELECT cm.c_number FROM ${dbRef.table_names.clients} cm WHERE cm.c_name = ($1)`;
     const clientIdResponse = await conn.query(clientIDQuery, [clientName]);
 
     const updateBuySellQuery = pgPromise.as.format(
@@ -103,10 +103,11 @@ export async function postUpdateProperty(payload: Property) {
             ${dbRef.properties.p_zip} = $22,
             ${dbRef.properties.p_request_date} = $23,
             ${dbRef.properties.p_closed_date} = $24,
-            ${dbRef.properties.last_updated_by} = $25,
-            ${dbRef.properties.last_updated} = $26 
+            ${dbRef.properties.p_county} = $25,
+            ${dbRef.properties.last_updated_by} = $26,
+            ${dbRef.properties.last_updated} = $27 
           
-          WHERE pm.${dbRef.properties.id} = $27
+          WHERE pm.${dbRef.properties.id} = $28
 
             RETURNING *
           ;
@@ -136,6 +137,7 @@ export async function postUpdateProperty(payload: Property) {
         p_zip,
         p_request_date === '' ? null : p_request_date,
         p_closed_date === '' ? null : p_closed_date,
+        p_county,
         username,
         new Date(),
         id,

@@ -14,10 +14,10 @@ export async function postSelectedClient(clientId: string) {
           WHERE 
             ${dbRef.clients.id} = $1;
         `,
-      [clientId],
+      [Number(clientId)],
     );
 
-    const clientByIdResults = (await conn.query(clientByIdQuery)).rows;
+    const clientByIdResults = (await conn.query(clientByIdQuery)).rows[0];
     return clientByIdResults;
   } catch (error) {
     console.log(error);

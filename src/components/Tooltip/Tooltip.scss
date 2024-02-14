@@ -1,7 +1,6 @@
 .tooltip-container {
   position: relative;
   display: inline-block;
-  z-index: 999;
   height: fit-content;
 }
 
@@ -24,6 +23,8 @@
   display: block;
   line-height: 20px;
   letter-spacing: 0.2px;
+  z-index: 999;
+  position: relative;
 }
 
 .icon {

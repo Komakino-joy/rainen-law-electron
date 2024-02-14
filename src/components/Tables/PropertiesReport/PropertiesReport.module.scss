@@ -1,0 +1,8 @@
+#property-report {
+  th, td {
+    &:nth-child(2),
+    &:nth-child(5) {
+      text-align: left;
+    }
+  }
+}

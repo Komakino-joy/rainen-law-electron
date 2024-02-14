@@ -4,8 +4,10 @@ import toast from 'react-hot-toast';
 import { useTable, useFilters, useSortBy } from 'react-table';
 import InfoCard from '@/components/InfoCard/InfoCard';
 import PrintPropertyMultiple from '@/components/PrintPropertyMultiple/PrintPropertyMultiple';
+import { dbRef } from '~/constants/dbRefs';
 import { ipc } from '~/constants/ipcEvents';
 import { useIsAdmin } from '~/context/AuthContext';
+import { useFetchPropertiesLists } from '~/context/PropertiesContext';
 import { ModalType, Property } from '~/contracts';
 import {
   DownArrowIcon,
@@ -16,7 +18,6 @@ import {
 } from '~/icons/Icons';
 import { timestampToDate } from '~/utils';
 import './PropertiesTable.scss';
-import { dbRef } from '~/constants/dbRefs';
 
 interface OwnProps {
   tableData: any;
@@ -38,6 +39,7 @@ const PropertiesTable: React.FC<OwnProps> = ({
   tableData,
 }) => {
   const isAdmin = useIsAdmin();
+  const fetchPropertyLists = useFetchPropertiesLists();
   const [labelsToPrint, setLabelsToPrint] = useState<Property[]>([]);
   const data = useMemo(() => tableData, [tableData]);
 
@@ -53,24 +55,19 @@ const PropertiesTable: React.FC<OwnProps> = ({
           onClick: async () => {
             await window.electron.ipcRenderer.sendMessage(
               ipc.postDeleteProperty,
-              {
-                id,
-              },
+              id,
             );
             await window.electron.ipcRenderer.once(
               ipc.postDeleteProperty,
-              (response) => {
-                if (response.status === 'success') {
-                  toast.success(response.message, { id: 'delete-property' });
+              ({ status, message }) => {
+                toast[status](message, { id: 'delete-property' });
 
+                if (status === 'success') {
                   const filteredArray = tableData.filter(
-                    (row: Property) => row.id !== id,
+                    (row: Property) => row.id.toString() !== id.toString(),
                   );
                   setTableData(filteredArray);
-                }
-
-                if (response.status === 'error') {
-                  toast.error(response.message, { id: 'delete-property' });
+                  fetchPropertyLists();
                 }
               },
             );

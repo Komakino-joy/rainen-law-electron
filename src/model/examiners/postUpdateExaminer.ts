@@ -48,7 +48,7 @@ export async function postUpdateExaminer(payload: OwnProps) {
     console.log(error);
     return {
       message: 'Failed to update record',
-      status: 'failure',
+      status: 'error',
     };
   }
 }

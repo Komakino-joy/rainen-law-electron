@@ -12,7 +12,6 @@ type OwnProps = {
 
 const SubTableINS: React.FC<OwnProps> = ({ inmbr, settitlescount }) => {
   const [tableData, setTableData] = useState([]);
-
   useEffect(() => {
     (async () => {
       await window.electron.ipcRenderer.sendMessage(ipc.postInsTitlesInfo, {

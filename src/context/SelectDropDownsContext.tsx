@@ -66,58 +66,59 @@ export const SelectDropDownsContextProvider = ({
     mounted.current = true;
     async function fetchDropdownOptions() {
       setIsLoading(true);
-      await window.electron.ipcRenderer.sendMessage(ipc.getDropDownOptions);
-      await window.electron.ipcRenderer.once(
-        ipc.getDropDownOptions,
-        (response) => {
-          const {
-            allCitiesList,
-            clientStatusList,
-            propertyStatusList,
-            propertyTypeList,
-            distinctCitiesList,
-            distinctCountiesList,
-          } = response;
 
-          setClientStatusList(clientStatusList);
-          setPropertyStatusList(propertyStatusList);
-          setPropertyTypeList(propertyTypeList);
-          setAllCitiesList(allCitiesList);
-          setDistinctCitiesList(distinctCitiesList);
-
-          setClientStatusDropDownOptions(
-            clientStatusList.map((row: ClientStatus) => ({
-              label: row.status_desc,
-              value: row.status_desc,
-            })),
-          );
-          setPropertyStatusDropDownOptions(
-            propertyStatusList.map((row: PropertyStatus) => ({
-              label: row.status_desc,
-              value: row.status_desc,
-            })),
-          );
-          setPropertyTypeDropDownOptions(
-            propertyTypeList.map((row: PropertyType) => ({
-              label: row.type_code,
-              value: row.type_code,
-            })),
-          );
-          setCityDropDownOptions(
-            distinctCitiesList.map((row: Partial<City>) => ({
-              label: row.city,
-              value: row.city,
-            })),
-          );
-          setCountyDropDownOptions(
-            distinctCountiesList.map((row: Partial<City>) => ({
-              label: row.county,
-              value: row.county,
-            })),
-          );
-
+      const values: any = await new Promise((resolve) => {
+        window.electron.ipcRenderer.sendMessage(ipc.getDropDownOptions);
+        window.electron.ipcRenderer.once(ipc.getDropDownOptions, (response) => {
+          resolve(response);
           setIsLoading(false);
-        },
+        });
+      });
+
+      const {
+        allCitiesList,
+        clientStatusList,
+        propertyStatusList,
+        propertyTypeList,
+        distinctCitiesList,
+        distinctCountiesList,
+      } = values;
+
+      setClientStatusList(clientStatusList);
+      setPropertyStatusList(propertyStatusList);
+      setPropertyTypeList(propertyTypeList);
+      setAllCitiesList(allCitiesList);
+      setDistinctCitiesList(distinctCitiesList);
+
+      setClientStatusDropDownOptions(
+        clientStatusList.map((row: ClientStatus) => ({
+          label: row.status_desc,
+          value: row.status_desc,
+        })),
+      );
+      setPropertyStatusDropDownOptions(
+        propertyStatusList.map((row: PropertyStatus) => ({
+          label: row.status_desc,
+          value: row.status_desc,
+        })),
+      );
+      setPropertyTypeDropDownOptions(
+        propertyTypeList.map((row: PropertyType) => ({
+          label: row.type_code,
+          value: row.type_code,
+        })),
+      );
+      setCityDropDownOptions(
+        distinctCitiesList.map((row: Partial<City>) => ({
+          label: row.city,
+          value: row.city,
+        })),
+      );
+      setCountyDropDownOptions(
+        distinctCountiesList.map((row: Partial<City>) => ({
+          label: row.county,
+          value: row.county,
+        })),
       );
     }
 

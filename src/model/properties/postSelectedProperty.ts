@@ -28,7 +28,7 @@ export async function postSelectedProperty(propertyId: string) {
       [propertyId],
     );
 
-    const propertiesResults = (await conn.query(propertiesQuery)).rows;
+    const propertiesResults = (await conn.query(propertiesQuery)).rows[0];
     return propertiesResults;
   } catch (error) {
     console.log(error);

@@ -98,12 +98,12 @@ export async function postInsertClient(payload: Client) {
   } catch (error) {
     const conn = await getConn();
     await conn.query('ROLLBACK');
-    console.log(error);
+
     return {
       // @ts-ignore
       newPropId: null,
       message: 'Failed to insert record',
-      status: 'failure',
+      status: 'error',
     };
   }
 }
