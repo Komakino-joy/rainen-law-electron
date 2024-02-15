@@ -19,6 +19,7 @@ export async function getLatestUpdatedClients() {
 
     return {
       status: 'success',
+      message: '',
       data: result.rows,
     };
   } catch (error) {

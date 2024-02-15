@@ -31,9 +31,13 @@ export async function getLatestUpdatedProperties() {
         `;
     const propertiesResults = (await conn.query(allProperties)).rows;
 
-    return propertiesResults;
+    return {
+      status: 'success',
+      message: '',
+      data: propertiesResults,
+    };
   } catch (error) {
     console.log(error);
-    return { message: 'Failed to get properties' };
+    return { message: 'Failed to get properties', status: 'error' };
   }
 }

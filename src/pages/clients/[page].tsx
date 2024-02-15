@@ -63,7 +63,7 @@ const ClientsPage = () => {
               resolve(setIsLoading(false));
             } else {
               toast.error(message, { id: 'fetch-properties-page' });
-              reject(setIsLoading(false));
+              resolve(setIsLoading(false));
             }
           },
         );

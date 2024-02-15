@@ -10,6 +10,7 @@ import { ipc } from '~/constants/ipcEvents';
 import { Client, ModalType, Property } from '~/contracts';
 import { useUser } from '~/context/AuthContext';
 import { useIsConnectedToDB } from '~/context/DatabaseContext';
+import toast from 'react-hot-toast';
 
 const HomePage: React.FC = () => {
   const isConnectedToDB = useIsConnectedToDB();
@@ -57,33 +58,54 @@ const HomePage: React.FC = () => {
     mounted.current = true;
 
     const httpFetchPropertyData = async () => {
-      setIsLoading(true);
-      window.electron.ipcRenderer.sendMessage(ipc.getLatestUpdatedProperties);
-      window.electron.ipcRenderer.once(
-        ipc.getLatestUpdatedProperties,
-        (response) => {
-          setPropertyData(response as Property[]);
-        },
-      );
-      setIsLoading(false);
+      try {
+        setIsLoading(true);
+        await new Promise((resolve) => {
+          window.electron.ipcRenderer.sendMessage(
+            ipc.getLatestUpdatedProperties,
+          );
+          window.electron.ipcRenderer.once(
+            ipc.getLatestUpdatedProperties,
+            ({ data, status, message }) => {
+              if (status === 'success') {
+                setPropertyData(data as Property[]);
+              } else {
+                toast[status](message, { id: 'get-latest-properties' });
+              }
+              resolve('');
+            },
+          );
+        });
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     const httpFetchClientData = async () => {
-      setIsLoading(true);
-      window.electron.ipcRenderer.sendMessage(ipc.getLatestUpdatedClients);
-      window.electron.ipcRenderer.once(
-        ipc.getLatestUpdatedClients,
-        (clients) => {
-          setClientData(clients as Client[]);
-        },
-      );
-      setIsLoading(false);
+      try {
+        setIsLoading(true);
+        await new Promise((resolve) => {
+          window.electron.ipcRenderer.sendMessage(ipc.getLatestUpdatedClients);
+          window.electron.ipcRenderer.once(
+            ipc.getLatestUpdatedClients,
+            ({ data, status, message }) => {
+              if (status === 'success') {
+                setClientData(data as Client[]);
+              } else {
+                toast[status](message, { id: 'get-latest-clients' });
+              }
+              resolve('');
+            },
+          );
+        });
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     if (mounted.current && isConnectedToDB) {
       httpFetchPropertyData();
       httpFetchClientData();
-      setIsLoading(false);
     }
 
     return () => {
