@@ -53,10 +53,11 @@ const CitiesTable: React.FC<OwnProps> = ({
                     );
                     setTableData(filteredArray);
                     updateCitiesContext();
-                    resolve(toast[status](message, { id: 'delete-city' }));
+                    toast[status](message, { id: 'delete-city' });
                   } else {
-                    resolve(toast[status](message, { id: 'delete-city' }));
+                    toast[status](message, { id: 'delete-city' });
                   }
+                  resolve('');
                 },
               );
             });

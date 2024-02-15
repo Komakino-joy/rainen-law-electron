@@ -56,10 +56,11 @@ const ExaminersTable: React.FC<OwnProps> = ({
                     );
                     setTableData(filteredArray);
                     updateExaminersContext();
-                    resolve(toast[status](message, { id: 'delete-examiner' }));
+                    toast[status](message, { id: 'delete-examiner' });
                   } else {
-                    resolve(toast[status](message, { id: 'delete-examiner' }));
+                    toast[status](message, { id: 'delete-examiner' });
                   }
+                  resolve('');
                 },
               );
             });

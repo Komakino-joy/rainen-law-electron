@@ -78,10 +78,10 @@ export default function PropertyReport() {
                   return acc;
                 }, {}),
               );
-              resolve('');
             } else {
-              resolve(toast[status](message, { id: 'post-property-report' }));
+              toast[status](message, { id: 'post-property-report' });
             }
+            resolve('');
           },
         );
       });

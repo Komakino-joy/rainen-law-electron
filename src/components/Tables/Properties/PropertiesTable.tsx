@@ -67,10 +67,11 @@ const PropertiesTable: React.FC<OwnProps> = ({
                     );
                     setTableData(filteredArray);
                     fetchPropertyLists();
-                    resolve(toast[status](message, { id: 'delete-property' }));
+                    toast[status](message, { id: 'delete-property' });
                   } else {
-                    resolve(toast[status](message, { id: 'delete-property' }));
+                    toast[status](message, { id: 'delete-property' });
                   }
+                  resolve('');
                 },
               );
             });

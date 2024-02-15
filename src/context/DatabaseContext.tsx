@@ -60,11 +60,11 @@ export const DatabaseContextProvider = ({ children }: { children: any }) => {
           ipc.connectDB,
           ({ isConnectedToDB }) => {
             if (!isConnectedToDB) {
-              resolve(toast.error('Authentication failed', { id: 'DB auth' }));
+              toast.error('Authentication failed', { id: 'DB auth' });
             } else {
               setIsConnectedToDB(isConnectedToDB);
-              resolve('');
             }
+            resolve('');
           },
         );
       });

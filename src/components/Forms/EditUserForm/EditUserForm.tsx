@@ -72,10 +72,11 @@ const EditUserForm: React.FC<OwnProps> = ({
             if (status === 'success') {
               setTableData([newRecord, ...tableData]);
               reset();
-              resolve(toast[status](message, { id: 'insert-user' }));
+              toast[status](message, { id: 'insert-user' });
             } else {
-              resolve(toast[status](message, { id: 'insert-user' }));
+              toast[status](message, { id: 'insert-user' });
             }
+            resolve('');
           },
         );
       });
@@ -100,10 +101,11 @@ const EditUserForm: React.FC<OwnProps> = ({
               });
 
               setTableData(updatedData);
-              resolve(toast[status](message, { id: 'update-user' }));
+              toast[status](message, { id: 'update-user' });
             } else {
-              resolve(toast[status](message, { id: 'update-user' }));
+              toast[status](message, { id: 'update-user' });
             }
+            resolve('');
           },
         );
       });

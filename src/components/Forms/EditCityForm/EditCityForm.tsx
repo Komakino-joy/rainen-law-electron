@@ -79,10 +79,11 @@ const EditCityForm: React.FC<EditCityFormProps> = ({
             if (status === 'success') {
               setTableData([newRecord, ...tableData]);
               reset();
-              resolve(toast[status](message, { id: 'insery-city' }));
+              toast[status](message, { id: 'insery-city' });
             } else {
-              resolve(toast[status](message, { id: 'insery-city' }));
+              toast[status](message, { id: 'insery-city' });
             }
+            resolve('');
           },
         );
       });
@@ -106,10 +107,11 @@ const EditCityForm: React.FC<EditCityFormProps> = ({
               });
               reset(updatedRecord);
               setTableData(updatedData);
-              resolve(toast[status](message, { id: 'update-city' }));
+              toast[status](message, { id: 'update-city' });
             } else {
-              resolve(toast[status](message, { id: 'update-city' }));
+              toast[status](message, { id: 'update-city' });
             }
+            resolve('');
           },
         );
       });

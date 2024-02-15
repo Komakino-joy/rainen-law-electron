@@ -124,10 +124,10 @@ export const ClientsContextProvider = ({ children }: { children: any }) => {
                 });
 
                 setclientSelectOptions(clientsObject);
-                resolve('');
               } else {
-                resolve(toast[status](message, { id: 'get-all-clients' }));
+                toast[status](message, { id: 'get-all-clients' });
               }
+              resolve('');
             },
           );
         });

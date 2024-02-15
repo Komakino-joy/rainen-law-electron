@@ -52,10 +52,11 @@ const UsersTable: React.FC<OwnProps> = ({
                       (row) => row.id !== id,
                     );
                     setTableData(filteredArray);
-                    resolve(toast[status](message, { id: 'delete-user' }));
+                    toast[status](message, { id: 'delete-user' });
                   } else {
-                    resolve(toast[status](message, { id: 'delete-user' }));
+                    toast[status](message, { id: 'delete-user' });
                   }
+                  resolve('');
                 },
               );
             });

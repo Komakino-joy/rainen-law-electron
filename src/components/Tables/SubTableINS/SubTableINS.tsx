@@ -30,10 +30,10 @@ const SubTableINS: React.FC<OwnProps> = ({ inmbr, settitlescount }) => {
               if (status === 'success') {
                 setTableData(titles);
                 settitlescount(count);
-                resolve('');
               } else {
-                resolve(toast[status](message, { id: 'post-ins-info' }));
+                toast[status](message, { id: 'post-ins-info' });
               }
+              resolve('');
             },
           );
         });

@@ -40,10 +40,10 @@ const SubTableProperties: React.FC<OwnProps> = ({ cnmbr }) => {
             ({ propertiesInfo, status, message }) => {
               if (status === 'success') {
                 setTableData(propertiesInfo);
-                resolve('');
               } else {
-                resolve(toast[status](message, { id: 'post-propertoes-info' }));
+                toast[status](message, { id: 'post-propertoes-info' });
               }
+              resolve('');
             },
           );
         });

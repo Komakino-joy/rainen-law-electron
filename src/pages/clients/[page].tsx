@@ -87,7 +87,7 @@ const ClientsPage = () => {
         <div className="all-records-view-page">
           <header>
             <h1>
-              All Clients
+              Clients
               {totalPages > 0 && (
                 <span className="italicized-record-count">
                   page ({currentPage}/{totalPages})

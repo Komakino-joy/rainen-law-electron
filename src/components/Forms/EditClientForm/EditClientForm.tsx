@@ -114,10 +114,11 @@ const ClientForm: React.FC<OwnProps> = ({
             if (status === 'success') {
               reset();
               updateClientList();
-              resolve(toast[status](message, { id: 'insert-client' }));
+              toast[status](message, { id: 'insert-client' });
             } else {
-              resolve(toast[status](message, { id: 'insert-client' }));
+              toast[status](message, { id: 'insert-client' });
             }
+            resolve('');
           },
         );
       });
@@ -143,10 +144,11 @@ const ClientForm: React.FC<OwnProps> = ({
                       handleAfterSubmit(clientInfoSnippet.id);
                       reset(updatedRecord);
                       updateClientList();
-                      resolve(toast[status](message, { id: 'updated-client' }));
+                      toast[status](message, { id: 'updated-client' });
                     } else {
-                      resolve(toast[status](message, { id: 'updated-client' }));
+                      toast[status](message, { id: 'updated-client' });
                     }
+                    resolve('');
                   },
                 );
               });

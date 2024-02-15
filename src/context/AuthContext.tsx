@@ -54,10 +54,10 @@ export const AuthProvider = ({ children }: { children: any }) => {
             if (status === 'success') {
               localStorage.setItem('user', JSON.stringify(user));
               setUser(user);
-              resolve('');
             } else {
-              resolve(toast.error(message, { id: 'invalid-credentials' }));
+              toast.error(message, { id: 'invalid-credentials' });
             }
+            resolve('');
           },
         );
       });

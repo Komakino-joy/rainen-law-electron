@@ -181,10 +181,11 @@ const EditPropertyForm: React.FC<OwnProps> = ({
               reset();
               handleAfterSubmit(newPropId);
               fetchPropertyLists();
-              resolve(toast[status](message, { id: 'insert-property' }));
+              toast[status](message, { id: 'insert-property' });
             } else {
-              resolve(toast[status](message, { id: 'insert-property' }));
+              toast[status](message, { id: 'insert-property' });
             }
+            resolve('');
           },
         );
       });
@@ -213,14 +214,12 @@ const EditPropertyForm: React.FC<OwnProps> = ({
                       handleAfterSubmit(propertyInfoSnippet.id);
                       reset(updatedRecord);
                       fetchPropertyLists();
-                      resolve(
-                        toast[status](message, { id: 'insert-property' }),
-                      );
+
+                      toast[status](message, { id: 'insert-property' });
                     } else {
-                      resolve(
-                        toast[status](message, { id: 'insert-property' }),
-                      );
+                      toast[status](message, { id: 'insert-property' });
                     }
+                    resolve('');
                   },
                 );
               });

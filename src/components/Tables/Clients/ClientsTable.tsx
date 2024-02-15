@@ -62,10 +62,11 @@ const ClientsTable: React.FC<OwnProps> = ({
                     );
                     setTableData(filteredArray);
                     updateClientList();
-                    resolve(toast[status](message, { id: 'delete-client' }));
+                    toast[status](message, { id: 'delete-client' });
                   } else {
-                    resolve(toast[status](message, { id: 'delete-client' }));
+                    toast[status](message, { id: 'delete-client' });
                   }
+                  resolve('');
                 },
               );
             });

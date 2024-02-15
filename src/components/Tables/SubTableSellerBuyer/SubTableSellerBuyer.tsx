@@ -29,10 +29,10 @@ const SubTableSellerBuyer: React.FC<OwnProps> = ({ compRef }) => {
             ({ buyerSellerInfo, status, message }) => {
               if (status === 'success') {
                 setTableData(buyerSellerInfo);
-                resolve('');
               } else {
-                resolve(toast[status](message, { id: 'post-buyer-seller' }));
+                toast[status](message, { id: 'post-buyer-seller' });
               }
+              resolve('');
             },
           );
         });

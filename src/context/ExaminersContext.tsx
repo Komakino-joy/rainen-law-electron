@@ -52,10 +52,10 @@ export const ExaminersContextProvider = ({ children }: { children: any }) => {
                       value: examiner.name,
                     })),
                 );
-                resolve('');
               } else {
-                resolve(toast[status](message, { id: 'get-examiners' }));
+                toast[status](message, { id: 'get-examiners' });
               }
+              resolve('');
             },
           );
         });

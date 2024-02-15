@@ -87,10 +87,11 @@ const EditExaminerForm: React.FC<EditEditExaminerFormProps> = ({
               setTableData([newRecord, ...tableData]);
               reset();
               updateExaminersList();
-              resolve(toast[status](message, { id: 'update-examiner' }));
+              toast[status](message, { id: 'update-examiner' });
             } else {
-              resolve(toast[status](message, { id: 'update-examiner' }));
+              toast[status](message, { id: 'update-examiner' });
             }
+            resolve('');
           },
         );
       });
@@ -115,10 +116,11 @@ const EditExaminerForm: React.FC<EditEditExaminerFormProps> = ({
               reset(updatedRecord);
               setTableData(updatedData);
               updateExaminersList();
-              resolve(toast[status](message, { id: 'update-examiner' }));
+              toast[status](message, { id: 'update-examiner' });
             } else {
-              resolve(toast[status](message, { id: 'update-examiner' }));
+              toast[status](message, { id: 'update-examiner' });
             }
+            resolve('');
           },
         );
       });
