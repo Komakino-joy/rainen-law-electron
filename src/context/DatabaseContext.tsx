@@ -27,15 +27,21 @@ export const DatabaseContextProvider = ({ children }: { children: any }) => {
   useEffect(() => {
     mounted.current = true;
     async function fetchDBConnectionStatus() {
-      setIsLoading(true);
-      await window.electron.ipcRenderer.sendMessage(ipc.checkDBConnection);
-      await window.electron.ipcRenderer.once(
-        ipc.checkDBConnection,
-        ({ isConnectedToDB }) => {
-          setIsConnectedToDB(isConnectedToDB);
-        },
-      );
-      setIsLoading(false);
+      try {
+        setIsLoading(true);
+        await new Promise((resolve) => {
+          window.electron.ipcRenderer.sendMessage(ipc.checkDBConnection);
+          window.electron.ipcRenderer.once(
+            ipc.checkDBConnection,
+            ({ isConnectedToDB }) => {
+              setIsConnectedToDB(isConnectedToDB);
+              resolve('');
+            },
+          );
+        });
+      } finally {
+        setIsLoading(false);
+      }
     }
 
     if (mounted.current) fetchDBConnectionStatus();
@@ -47,16 +53,24 @@ export const DatabaseContextProvider = ({ children }: { children: any }) => {
 
   const connectToDB = async (credentials: DBCredentials) => {
     setIsLoading(true);
-    await window.electron.ipcRenderer.sendMessage(ipc.connectDB, credentials);
-    await window.electron.ipcRenderer.once(
-      ipc.connectDB,
-      ({ isConnectedToDB }) => {
-        if (!isConnectedToDB)
-          toast.error('Authentication failed', { id: 'DB auth' });
-        setIsConnectedToDB(isConnectedToDB);
-      },
-    );
-    setIsLoading(false);
+    try {
+      await new Promise((resolve) => {
+        window.electron.ipcRenderer.sendMessage(ipc.connectDB, credentials);
+        window.electron.ipcRenderer.once(
+          ipc.connectDB,
+          ({ isConnectedToDB }) => {
+            if (!isConnectedToDB) {
+              resolve(toast.error('Authentication failed', { id: 'DB auth' }));
+            } else {
+              setIsConnectedToDB(isConnectedToDB);
+              resolve('');
+            }
+          },
+        );
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

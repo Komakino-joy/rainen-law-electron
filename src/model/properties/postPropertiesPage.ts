@@ -183,9 +183,14 @@ export async function postPropertiesPage(page: string, filters: string) {
       totalRecords,
       pageSize,
       currentPage: Number(page),
+      status: 'success',
+      message: '',
     };
   } catch (e) {
     console.log('Unable to fetch properties: ', e);
-    return {};
+    return {
+      status: 'error',
+      message: 'Failed to fetch properties',
+    };
   }
 }

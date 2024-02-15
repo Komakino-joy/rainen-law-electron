@@ -76,44 +76,52 @@ const EditExaminerForm: React.FC<EditEditExaminerFormProps> = ({
   const onSubmit = async (data: any) => {
     if (!isDirty) return;
     if (queryType === 'insert') {
-      await window.electron.ipcRenderer.sendMessage(ipc.postInsertExaminer, {
-        ...data,
+      await new Promise((resolve) => {
+        window.electron.ipcRenderer.sendMessage(ipc.postInsertExaminer, {
+          ...data,
+        });
+        window.electron.ipcRenderer.once(
+          ipc.postInsertExaminer,
+          ({ newRecord, message, status }) => {
+            if (status === 'success') {
+              setTableData([newRecord, ...tableData]);
+              reset();
+              updateExaminersList();
+              resolve(toast[status](message, { id: 'update-examiner' }));
+            } else {
+              resolve(toast[status](message, { id: 'update-examiner' }));
+            }
+          },
+        );
       });
-      await window.electron.ipcRenderer.once(
-        ipc.postInsertExaminer,
-        ({ newRecord, message, status }) => {
-          toast[status](message, { id: 'update-examiner' });
-          if (status === 'success') {
-            setTableData([newRecord, ...tableData]);
-            reset();
-            updateExaminersList();
-          }
-        },
-      );
     }
 
     if (queryType === 'update') {
-      await window.electron.ipcRenderer.sendMessage(ipc.postUpdateExaminer, {
-        ...data,
-        id: examinerId,
+      await new Promise((resolve) => {
+        window.electron.ipcRenderer.sendMessage(ipc.postUpdateExaminer, {
+          ...data,
+          id: examinerId,
+        });
+        window.electron.ipcRenderer.once(
+          ipc.postUpdateExaminer,
+          ({ updatedRecord, message, status }) => {
+            if (status === 'success') {
+              const updatedData = tableData.map((record) => {
+                if (record.id === updatedRecord.id) {
+                  record = updatedRecord;
+                }
+                return record;
+              });
+              reset(updatedRecord);
+              setTableData(updatedData);
+              updateExaminersList();
+              resolve(toast[status](message, { id: 'update-examiner' }));
+            } else {
+              resolve(toast[status](message, { id: 'update-examiner' }));
+            }
+          },
+        );
       });
-      await window.electron.ipcRenderer.once(
-        ipc.postUpdateExaminer,
-        ({ updatedRecord, message, status }) => {
-          toast[status](message, { id: 'update-examiner' });
-          if (status === 'success') {
-            const updatedData = tableData.map((record) => {
-              if (record.id === updatedRecord.id) {
-                record = updatedRecord;
-              }
-              return record;
-            });
-            reset(updatedRecord);
-            setTableData(updatedData);
-            updateExaminersList();
-          }
-        },
-      );
     }
   };
 

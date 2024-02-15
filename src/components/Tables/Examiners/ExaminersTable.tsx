@@ -42,23 +42,27 @@ const ExaminersTable: React.FC<OwnProps> = ({
         {
           label: 'Yes',
           onClick: async () => {
-            await window.electron.ipcRenderer.sendMessage(
-              ipc.postDeleteExaminer,
-              id,
-            );
-            await window.electron.ipcRenderer.once(
-              ipc.postDeleteExaminer,
-              ({ message, status }) => {
-                toast[status](message, { id: 'delete-examiner' });
-                if (status === 'success') {
-                  const filteredArray = tableData.filter(
-                    (row) => row.id.toString() !== id.toString(),
-                  );
-                  setTableData(filteredArray);
-                  updateExaminersContext();
-                }
-              },
-            );
+            await new Promise((resolve) => {
+              window.electron.ipcRenderer.sendMessage(
+                ipc.postDeleteExaminer,
+                id,
+              );
+              window.electron.ipcRenderer.once(
+                ipc.postDeleteExaminer,
+                ({ message, status }) => {
+                  if (status === 'success') {
+                    const filteredArray = tableData.filter(
+                      (row) => row.id.toString() !== id.toString(),
+                    );
+                    setTableData(filteredArray);
+                    updateExaminersContext();
+                    resolve(toast[status](message, { id: 'delete-examiner' }));
+                  } else {
+                    resolve(toast[status](message, { id: 'delete-examiner' }));
+                  }
+                },
+              );
+            });
           },
         },
         {

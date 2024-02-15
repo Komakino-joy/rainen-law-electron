@@ -10,6 +10,7 @@ import { ipc } from '~/constants/ipcEvents';
 import { Client, LabelValuePair } from '~/contracts';
 import { hasValue, uniqueLabelValuePairs } from '~/utils';
 import { useIsConnectedToDB } from './DatabaseContext';
+import toast from 'react-hot-toast';
 
 interface OwnProps {
   isLoadingClientsContext: boolean;
@@ -57,7 +58,6 @@ export const ClientsContextProvider = ({ children }: { children: any }) => {
   useEffect(() => {
     mounted.current = true;
     async function fetchClientsContextData() {
-      setIsLoading(true);
       // These are the only fields we care to make into Options for Select component
       const fields = [
         'c_name',
@@ -73,49 +73,68 @@ export const ClientsContextProvider = ({ children }: { children: any }) => {
         'c_email',
       ];
 
-      await window.electron.ipcRenderer.sendMessage(ipc.getAllClients);
-      await window.electron.ipcRenderer.once(ipc.getAllClients, (response) => {
-        const clientsObject = response.reduce((acc: any, row: Client) => {
-          // Iterate through our fields and see if we have assigned a value for each property in our accumulator
-          // Assign empty array if no value is found
-          for (let i = 0; i < fields.length; i++) {
-            if (!acc[fields[i]]) {
-              acc[fields[i]] = [];
-            }
-          }
+      try {
+        setIsLoading(true);
+        await new Promise((resolve) => {
+          window.electron.ipcRenderer.sendMessage(ipc.getAllClients);
+          window.electron.ipcRenderer.once(
+            ipc.getAllClients,
+            ({ clients, status, message }) => {
+              if (status === 'success') {
+                const clientsObject = clients.reduce(
+                  (acc: any, row: Client) => {
+                    // Iterate through our fields and see if we have assigned a value for each property in our accumulator
+                    // Assign empty array if no value is found
+                    for (let i = 0; i < fields.length; i++) {
+                      if (!acc[fields[i]]) {
+                        acc[fields[i]] = [];
+                      }
+                    }
 
-          type clientKey = keyof typeof row;
+                    type clientKey = keyof typeof row;
 
-          // Iterate through our fields and push to our accumulator arrays
-          for (let i = 0; i < fields.length; i++) {
-            if (hasValue(row[fields[i] as clientKey])) {
-              acc[fields[i]].push({
-                label: row[fields[i] as clientKey],
-                value: row[fields[i] as clientKey],
-              });
-            }
-          }
+                    // Iterate through our fields and push to our accumulator arrays
+                    for (let i = 0; i < fields.length; i++) {
+                      if (hasValue(row[fields[i] as clientKey])) {
+                        acc[fields[i]].push({
+                          label: row[fields[i] as clientKey],
+                          value: row[fields[i] as clientKey],
+                        });
+                      }
+                    }
 
-          return acc;
-        }, {});
+                    return acc;
+                  },
+                  {},
+                );
 
-        // Remove all duplicate objects from our new arrays
-        Object.keys(clientsObject).map(
-          (key) =>
-            (clientsObject[key] = uniqueLabelValuePairs(clientsObject[key])),
-        );
+                // Remove all duplicate objects from our new arrays
+                Object.keys(clientsObject).map(
+                  (key) =>
+                    (clientsObject[key] = uniqueLabelValuePairs(
+                      clientsObject[key],
+                    )),
+                );
 
-        clientsObject.c_number.sort(function (
-          a: LabelValuePair,
-          b: LabelValuePair,
-        ) {
-          return a.value - b.value;
+                clientsObject.c_number.sort(function (
+                  a: LabelValuePair,
+                  b: LabelValuePair,
+                ) {
+                  return a.value - b.value;
+                });
+
+                setclientSelectOptions(clientsObject);
+                resolve('');
+              } else {
+                resolve(toast[status](message, { id: 'get-all-clients' }));
+              }
+            },
+          );
         });
-
-        setclientSelectOptions(clientsObject);
+      } finally {
         setIsLoading(false);
         setShouldFetch(false);
-      });
+      }
     }
     if (mounted.current && isConnectedToDB && shouldFetch)
       fetchClientsContextData();

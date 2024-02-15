@@ -58,13 +58,11 @@ const HomePage: React.FC = () => {
 
     const httpFetchPropertyData = async () => {
       setIsLoading(true);
-      await window.electron.ipcRenderer.sendMessage(
-        ipc.getLatestUpdatedProperties,
-      );
-      await window.electron.ipcRenderer.once(
+      window.electron.ipcRenderer.sendMessage(ipc.getLatestUpdatedProperties);
+      window.electron.ipcRenderer.once(
         ipc.getLatestUpdatedProperties,
         (response) => {
-          setPropertyData(response);
+          setPropertyData(response as Property[]);
         },
       );
       setIsLoading(false);
@@ -72,13 +70,11 @@ const HomePage: React.FC = () => {
 
     const httpFetchClientData = async () => {
       setIsLoading(true);
-      await window.electron.ipcRenderer.sendMessage(
-        ipc.getLatestUpdatedClients,
-      );
-      await window.electron.ipcRenderer.once(
+      window.electron.ipcRenderer.sendMessage(ipc.getLatestUpdatedClients);
+      window.electron.ipcRenderer.once(
         ipc.getLatestUpdatedClients,
         (clients) => {
-          setClientData(clients);
+          setClientData(clients as Client[]);
         },
       );
       setIsLoading(false);

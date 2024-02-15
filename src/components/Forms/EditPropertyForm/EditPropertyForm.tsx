@@ -169,21 +169,25 @@ const EditPropertyForm: React.FC<OwnProps> = ({
     if (isDirtyAlt) return;
 
     if (queryType === 'insert') {
-      await window.electron.ipcRenderer.sendMessage(ipc.postInsertProperty, {
-        ...data,
-        username: user ? user.username : 'N/A',
+      await new Promise((resolve) => {
+        window.electron.ipcRenderer.sendMessage(ipc.postInsertProperty, {
+          ...data,
+          username: user ? user.username : 'N/A',
+        });
+        window.electron.ipcRenderer.once(
+          ipc.postInsertProperty,
+          ({ newPropId, message, status }) => {
+            if (status === 'success') {
+              reset();
+              handleAfterSubmit(newPropId);
+              fetchPropertyLists();
+              resolve(toast[status](message, { id: 'insert-property' }));
+            } else {
+              resolve(toast[status](message, { id: 'insert-property' }));
+            }
+          },
+        );
       });
-      await window.electron.ipcRenderer.once(
-        ipc.postInsertProperty,
-        ({ newPropId, message, status }) => {
-          toast[status](message, { id: 'insert-property' });
-          if (status === 'success') {
-            reset();
-            handleAfterSubmit(newPropId);
-            fetchPropertyLists();
-          }
-        },
-      );
     }
 
     if (queryType === 'update') {
@@ -193,25 +197,33 @@ const EditPropertyForm: React.FC<OwnProps> = ({
           {
             label: 'Yes',
             onClick: async () => {
-              await window.electron.ipcRenderer.sendMessage(
-                ipc.postUpdateProperty,
-                {
-                  ...data,
-                  id: propertyInfoSnippet.id, // Passing id to update correct record
-                  username: user ? user.username : 'N/A',
-                },
-              );
-              await window.electron.ipcRenderer.once(
-                ipc.postUpdateProperty,
-                ({ updatedRecord, message, status }) => {
-                  toast[status](message, { id: 'update-property' });
-                  if (status === 'success') {
-                    handleAfterSubmit(propertyInfoSnippet.id);
-                    reset(updatedRecord);
-                    fetchPropertyLists();
-                  }
-                },
-              );
+              await new Promise((resolve) => {
+                window.electron.ipcRenderer.sendMessage(
+                  ipc.postUpdateProperty,
+                  {
+                    ...data,
+                    id: propertyInfoSnippet.id, // Passing id to update correct record
+                    username: user ? user.username : 'N/A',
+                  },
+                );
+                window.electron.ipcRenderer.once(
+                  ipc.postUpdateProperty,
+                  ({ updatedRecord, message, status }) => {
+                    if (status === 'success') {
+                      handleAfterSubmit(propertyInfoSnippet.id);
+                      reset(updatedRecord);
+                      fetchPropertyLists();
+                      resolve(
+                        toast[status](message, { id: 'insert-property' }),
+                      );
+                    } else {
+                      resolve(
+                        toast[status](message, { id: 'insert-property' }),
+                      );
+                    }
+                  },
+                );
+              });
             },
           },
           {

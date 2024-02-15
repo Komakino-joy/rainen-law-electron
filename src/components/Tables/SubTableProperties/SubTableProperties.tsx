@@ -12,6 +12,8 @@ import EditPropertyModal from '@/components/Modals/EditPropertyModal';
 import { Property } from '~/contracts';
 import { ipc } from '~/constants/ipcEvents';
 import { dbRef } from '~/constants/dbRefs';
+import toast from 'react-hot-toast';
+import Spinner from '@/components/Spinner/Spinner';
 
 interface OwnProps {
   cnmbr: string;
@@ -19,6 +21,7 @@ interface OwnProps {
 
 const SubTableProperties: React.FC<OwnProps> = ({ cnmbr }) => {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
   const [tableData, setTableData] = useState([]);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -26,15 +29,27 @@ const SubTableProperties: React.FC<OwnProps> = ({ cnmbr }) => {
 
   useEffect(() => {
     (async () => {
-      await window.electron.ipcRenderer.sendMessage(ipc.postPropertiesInfo, {
-        cnmbr,
-      });
-      await window.electron.ipcRenderer.once(
-        ipc.postPropertiesInfo,
-        (propertiesInfo) => {
-          setTableData(propertiesInfo);
-        },
-      );
+      try {
+        setIsLoading(true);
+        await new Promise((resolve) => {
+          window.electron.ipcRenderer.sendMessage(ipc.postPropertiesInfo, {
+            cnmbr,
+          });
+          window.electron.ipcRenderer.once(
+            ipc.postPropertiesInfo,
+            ({ propertiesInfo, status, message }) => {
+              if (status === 'success') {
+                setTableData(propertiesInfo);
+                resolve('');
+              } else {
+                resolve(toast[status](message, { id: 'post-propertoes-info' }));
+              }
+            },
+          );
+        });
+      } finally {
+        setIsLoading(false);
+      }
     })();
   }, [cnmbr]);
 
@@ -117,6 +132,8 @@ const SubTableProperties: React.FC<OwnProps> = ({ cnmbr }) => {
       useFilters,
       useSortBy,
     );
+
+  if (isLoading) return <Spinner smallSpinner />;
 
   return (
     <>

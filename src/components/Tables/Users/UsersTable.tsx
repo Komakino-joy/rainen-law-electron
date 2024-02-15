@@ -39,27 +39,26 @@ const UsersTable: React.FC<OwnProps> = ({
         {
           label: 'Yes',
           onClick: async () => {
-            await window.electron.ipcRenderer.sendMessage(ipc.postDeleteUser, {
-              id,
-              selectionType,
+            await new Promise((resolve) => {
+              window.electron.ipcRenderer.sendMessage(ipc.postDeleteUser, {
+                id,
+                selectionType,
+              });
+              window.electron.ipcRenderer.once(
+                ipc.postDeleteUser,
+                ({ message, status }) => {
+                  if (status === 'success') {
+                    const filteredArray = tableData.filter(
+                      (row) => row.id !== id,
+                    );
+                    setTableData(filteredArray);
+                    resolve(toast[status](message, { id: 'delete-user' }));
+                  } else {
+                    resolve(toast[status](message, { id: 'delete-user' }));
+                  }
+                },
+              );
             });
-            await window.electron.ipcRenderer.once(
-              ipc.postDeleteUser,
-              (response) => {
-                if (response.data.status === 'success') {
-                  toast.success(response.data.message, { id: 'delete-user' });
-
-                  const filteredArray = tableData.filter(
-                    (row) => row.id !== id,
-                  );
-                  setTableData(filteredArray);
-                }
-
-                if (response.data.status === 'error') {
-                  toast.error(response.data.message, { id: 'delete-user' });
-                }
-              },
-            );
           },
         },
         {

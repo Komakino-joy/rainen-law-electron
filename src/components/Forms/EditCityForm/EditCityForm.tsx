@@ -68,42 +68,51 @@ const EditCityForm: React.FC<EditCityFormProps> = ({
   const onSubmit = async (data: any) => {
     if (!isDirty) return;
     if (queryType === 'insert') {
-      await window.electron.ipcRenderer.sendMessage(ipc.postInsertCity, {
-        ...data,
+      await new Promise((resolve) => {
+        window.electron.ipcRenderer.sendMessage(ipc.postInsertCity, {
+          ...data,
+        });
+
+        window.electron.ipcRenderer.once(
+          ipc.postInsertCity,
+          ({ newRecord, message, status }) => {
+            if (status === 'success') {
+              setTableData([newRecord, ...tableData]);
+              reset();
+              resolve(toast[status](message, { id: 'insery-city' }));
+            } else {
+              resolve(toast[status](message, { id: 'insery-city' }));
+            }
+          },
+        );
       });
-      await window.electron.ipcRenderer.once(
-        ipc.postInsertCity,
-        ({ newRecord, message, status }) => {
-          toast[status](message, { id: 'update-city' });
-          if (status === 'success') {
-            setTableData([newRecord, ...tableData]);
-            reset();
-          }
-        },
-      );
     }
 
     if (queryType === 'update') {
-      await window.electron.ipcRenderer.sendMessage(ipc.postUpdateCity, {
-        ...data,
-        id: cityId,
+      await new Promise((resolve) => {
+        window.electron.ipcRenderer.sendMessage(ipc.postUpdateCity, {
+          ...data,
+          id: cityId,
+        });
+        window.electron.ipcRenderer.once(
+          ipc.postUpdateCity,
+          ({ updatedRecord, message, status }) => {
+            if (status === 'success') {
+              const updatedData = tableData.map((record) => {
+                if (record.id === updatedRecord.id) {
+                  record = updatedRecord;
+                }
+                return record;
+              });
+              reset(updatedRecord);
+              setTableData(updatedData);
+              resolve(toast[status](message, { id: 'update-city' }));
+            } else {
+              resolve(toast[status](message, { id: 'update-city' }));
+            }
+          },
+        );
       });
-      await window.electron.ipcRenderer.once(
-        ipc.postUpdateCity,
-        ({ updatedRecord, message, status }) => {
-          toast[status](message, { id: 'update-city' });
-          if (status === 'success') {
-            const updatedData = tableData.map((record) => {
-              if (record.id === updatedRecord.id) {
-                record = updatedRecord;
-              }
-              return record;
-            });
-            reset(updatedRecord);
-            setTableData(updatedData);
-          }
-        },
-      );
     }
   };
 

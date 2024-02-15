@@ -12,6 +12,7 @@ import { ipc } from '~/constants/ipcEvents';
 import { Property, ReportProperty } from '~/contracts';
 import { dateToString, timestampToDate } from '~/utils';
 import styles from './PropertyReport.module.scss';
+import toast from 'react-hot-toast';
 
 export default function PropertyReport() {
   const [isLoading, setIsLoading] = useState(false);
@@ -48,45 +49,48 @@ export default function PropertyReport() {
       data.startDate = dateToString(data.startDate);
       data.endDate = dateToString(data.endDate);
 
-      await window.electron.ipcRenderer.sendMessage(
-        ipc.postPropertyReport,
-        data,
-      );
-      await window.electron.ipcRenderer.once(
-        ipc.postPropertyReport,
-        (response) => {
-          setPropertiesData(response);
+      await new Promise((resolve) => {
+        window.electron.ipcRenderer.sendMessage(ipc.postPropertyReport, data);
+        window.electron.ipcRenderer.once(
+          ipc.postPropertyReport,
+          ({ data, status, message }) => {
+            if (status === 'success') {
+              setPropertiesData(data);
 
-          setCountyCountMap(
-            response.reduce((acc: any, propObj: ReportProperty) => {
-              if (!acc[propObj.county_name]) {
-                acc[propObj.county_name] = 1;
-              } else {
-                acc[propObj.county_name] = acc[propObj.county_name] + 1;
-              }
-              return acc;
-            }, {}),
-          );
+              setCountyCountMap(
+                data.reduce((acc: any, propObj: ReportProperty) => {
+                  if (!acc[propObj.county_name]) {
+                    acc[propObj.county_name] = 1;
+                  } else {
+                    acc[propObj.county_name] = acc[propObj.county_name] + 1;
+                  }
+                  return acc;
+                }, {}),
+              );
 
-          setTitleTypeMap(
-            response.reduce((acc: any, propObj: ReportProperty) => {
-              if (!acc[propObj.p_type]) {
-                acc[propObj.p_type] = 1;
-              } else {
-                acc[propObj.p_type] = acc[propObj.p_type] + 1;
-              }
-              return acc;
-            }, {}),
-          );
-        },
-      );
-      setIsLoading(false);
+              setTitleTypeMap(
+                data.reduce((acc: any, propObj: ReportProperty) => {
+                  if (!acc[propObj.p_type]) {
+                    acc[propObj.p_type] = 1;
+                  } else {
+                    acc[propObj.p_type] = acc[propObj.p_type] + 1;
+                  }
+                  return acc;
+                }, {}),
+              );
+              resolve('');
+            } else {
+              resolve(toast[status](message, { id: 'post-property-report' }));
+            }
+          },
+        );
+      });
+
       reset();
-    } catch (error) {
-      console.log(error);
+    } finally {
       setIsLoading(false);
+      sethasSearched(true);
     }
-    sethasSearched(true);
   };
 
   const componentRef = useRef(null);

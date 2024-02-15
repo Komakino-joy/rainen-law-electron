@@ -62,38 +62,51 @@ const EditUserForm: React.FC<OwnProps> = ({
     if (!isDirty) return;
 
     if (queryType === 'insert') {
-      await window.electron.ipcRenderer.sendMessage(ipc.postInsertUser, {
-        data,
+      await new Promise((resolve) => {
+        window.electron.ipcRenderer.sendMessage(ipc.postInsertUser, {
+          data,
+        });
+        window.electron.ipcRenderer.once(
+          ipc.postInsertUser,
+          ({ newRecord, message, status }) => {
+            if (status === 'success') {
+              setTableData([newRecord, ...tableData]);
+              reset();
+              resolve(toast[status](message, { id: 'insert-user' }));
+            } else {
+              resolve(toast[status](message, { id: 'insert-user' }));
+            }
+          },
+        );
       });
-      await window.electron.ipcRenderer.once(
-        ipc.postInsertUser,
-        (newRecord) => {
-          reset();
-          setTableData([...tableData, newRecord]);
-        },
-      );
     }
 
     if (queryType === 'update') {
-      await window.electron.ipcRenderer.sendMessage(ipc.postUpdateUser, {
-        id: userId,
-        data,
-      });
-      await window.electron.ipcRenderer.once(
-        ipc.postUpdateUser,
-        (updatedRecord) => {
-          reset(updatedRecord);
+      await new Promise((resolve) => {
+        window.electron.ipcRenderer.sendMessage(ipc.postUpdateUser, {
+          id: userId,
+          data,
+        });
+        window.electron.ipcRenderer.once(
+          ipc.postUpdateUser,
+          ({ updatedRecord, message, status }) => {
+            if (status === 'success') {
+              reset(updatedRecord);
+              const updatedData = tableData.map((record) => {
+                if (record.id === updatedRecord.id) {
+                  record = updatedRecord;
+                }
+                return record;
+              });
 
-          const updatedData = tableData.map((record) => {
-            if (record.id === updatedRecord.id) {
-              record = updatedRecord;
+              setTableData(updatedData);
+              resolve(toast[status](message, { id: 'update-user' }));
+            } else {
+              resolve(toast[status](message, { id: 'update-user' }));
             }
-            return record;
-          });
-
-          setTableData(updatedData);
-        },
-      );
+          },
+        );
+      });
     }
   };
 

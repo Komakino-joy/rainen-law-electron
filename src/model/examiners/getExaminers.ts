@@ -6,7 +6,11 @@ export async function getExaminers() {
     const selectQuery = `SELECT * FROM public.examiners;`;
     const result = await conn.query(selectQuery);
 
-    return result.rows;
+    return {
+      status: 'success',
+      message: '',
+      examiners: result.rows,
+    };
   } catch (error) {
     console.log(error);
     return {

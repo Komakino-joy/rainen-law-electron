@@ -2,36 +2,25 @@
 // /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
-export type Channels =
-  | 'ipc-example'
-  | 'checkDBConnection'
-  | 'connectDB'
-  | 'postLogin'
-  | 'postBuyerSellerInfo'
-  | 'postDeleteClient'
-  | 'getLatestUpdatedProperties'
-  | 'postDeleteProperty'
-  | 'postInsertProperty'
-  | 'postSelectedProperty'
-  | 'postPropertiesInfo'
-  | 'postUpdateProperty'
-  | 'postDeleteUser'
-  | 'postInsertUser'
-  | 'postSelectedUser'
-  | 'postUpdateUser'
-  | 'getNewCompRef'
-  | 'getAllClients'
-  | 'getAllUsers'
-  | 'getLatestUpdatedClients'
-  | 'postInsertClient'
-  | 'postSelectedClient'
-  | 'postUpdateClient'
-  | 'getExaminers'
-  | 'getDropDownOptions'
-  | 'postInsTitlesInfo'
-  | 'postInsertDropDownOptions'
-  | 'postSelectedDropDownOptions'
-  | 'postUpdateDropDownOptions';
+export type Channels = string;
+
+export interface ElectronHandler {
+  store: {
+    get(key: string): any;
+    set(property: string, val: any): void;
+    // Add other methods like has(), reset(), etc. here
+  };
+  ipcRenderer: {
+    sendMessage(channel: Channels, ...args: any[]): void;
+    on(channel: Channels, func: (...args: any[]) => void): () => void;
+    once(channel: Channels, func: (...args: any[]) => void): void;
+  };
+  printComponent(url: string, callback: (response: any) => void): Promise<void>;
+  previewComponent(
+    url: string,
+    callback: (response: any) => void,
+  ): Promise<void>;
+}
 
 const electronHandler = {
   store: {
@@ -44,11 +33,11 @@ const electronHandler = {
     // Other method you want to add like has(), reset(), etc.
   },
   ipcRenderer: {
-    sendMessage(channel: Channels, ...args: unknown[]) {
+    sendMessage(channel: Channels, ...args: any[]) {
       ipcRenderer.send(channel, ...args);
     },
-    on(channel: Channels, func: (...args: unknown[]) => void) {
-      const subscription = (_event: IpcRendererEvent, ...args: unknown[]) =>
+    on(channel: Channels, func: (...args: any[]) => void) {
+      const subscription = (_event: IpcRendererEvent, ...args: any[]) =>
         func(...args);
       ipcRenderer.on(channel, subscription);
 
@@ -56,7 +45,7 @@ const electronHandler = {
         ipcRenderer.removeListener(channel, subscription);
       };
     },
-    once(channel: Channels, func: (...args: unknown[]) => void) {
+    once(channel: Channels, func: (...args: any[]) => void) {
       ipcRenderer.once(channel, (_event, ...args) => func(...args));
     },
   },

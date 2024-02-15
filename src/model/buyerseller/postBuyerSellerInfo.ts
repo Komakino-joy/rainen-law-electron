@@ -12,7 +12,11 @@ export async function postBuyerSellerInfo(p_comp_ref: string) {
 
     const result = await conn.query(getBuyerSellerInfoQuery, [p_comp_ref]);
 
-    return result.rows;
+    return {
+      status: 'success',
+      message: '',
+      buyerSellerInfo: result.rows,
+    };
   } catch (error) {
     console.log(error);
     return {

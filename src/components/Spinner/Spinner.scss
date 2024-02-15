@@ -16,6 +16,17 @@
   animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
   border-color: #0066a1 transparent transparent transparent;
 }
+
+.lds-ring.lds-small {
+  width: 40px;
+  height: 40px;
+}
+
+.lds-ring.lds-small div {
+  height: 32px;
+  width: 32px;
+}
+
 .lds-ring div:nth-child(1) {
   animation-delay: -0.45s;
 }

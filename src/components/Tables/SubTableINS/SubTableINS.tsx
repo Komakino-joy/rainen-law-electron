@@ -1,4 +1,6 @@
+import Spinner from '@/components/Spinner/Spinner';
 import React, { useEffect, useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
 import { useTable, useFilters, useSortBy } from 'react-table';
 import { dbRef } from '~/constants/dbRefs';
 import { ipc } from '~/constants/ipcEvents';
@@ -11,19 +13,33 @@ type OwnProps = {
 };
 
 const SubTableINS: React.FC<OwnProps> = ({ inmbr, settitlescount }) => {
+  const [isLoading, setIsLoading] = useState(false);
   const [tableData, setTableData] = useState([]);
+
   useEffect(() => {
     (async () => {
-      await window.electron.ipcRenderer.sendMessage(ipc.postInsTitlesInfo, {
-        inmbr,
-      });
-      await window.electron.ipcRenderer.once(
-        ipc.postInsTitlesInfo,
-        ({ titles, count }) => {
-          setTableData(titles);
-          settitlescount(count);
-        },
-      );
+      try {
+        await new Promise((resolve) => {
+          setIsLoading(true);
+          window.electron.ipcRenderer.sendMessage(ipc.postInsTitlesInfo, {
+            inmbr,
+          });
+          window.electron.ipcRenderer.once(
+            ipc.postInsTitlesInfo,
+            ({ titles, count, status, message }) => {
+              if (status === 'success') {
+                setTableData(titles);
+                settitlescount(count);
+                resolve('');
+              } else {
+                resolve(toast[status](message, { id: 'post-ins-info' }));
+              }
+            },
+          );
+        });
+      } finally {
+        setIsLoading(false);
+      }
     })();
   }, [inmbr, settitlescount]);
 
@@ -75,6 +91,8 @@ const SubTableINS: React.FC<OwnProps> = ({ inmbr, settitlescount }) => {
       useFilters,
       useSortBy,
     );
+
+  if (isLoading) return <Spinner smallSpinner />;
 
   return (
     <table className="is-sub-table" {...getTableProps()}>

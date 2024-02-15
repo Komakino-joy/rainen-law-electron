@@ -24,6 +24,8 @@ export async function postInsTitlesInfo(inmbr: string) {
     return {
       titles: result.rows,
       count: result.rowCount,
+      status: 'success',
+      message: '',
     };
   } catch (error) {
     console.log(error);

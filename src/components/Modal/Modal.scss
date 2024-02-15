@@ -10,11 +10,12 @@
   background-color: rgba(0, 0, 0, 0.5);
 
   .modal-content {
+    position: absolute;
     background: white;
     width: fit-content;
     height: fit-content;
     max-height: 80vh;
-    overflow: auto;
+    overflow-y: scroll;
     border-radius: 15px;
     padding: 5px 20px 15px 20px;
 

@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
+import toast from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import EditPropertyModal from '@/components/Modals/EditPropertyModal';
 import Pagination from '@/components/Pagination/Pagination';
 import PropertiesTable from '@/components/Tables/Properties/PropertiesTable';
 import Spinner from '@/components/Spinner/Spinner';
+import { res } from '~/constants';
 import { ipc } from '~/constants/ipcEvents';
 import { useIsConnectedToDB } from '~/context/DatabaseContext';
 import { Property } from '~/contracts';
@@ -15,8 +17,8 @@ const PropertiesPage = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [pageSize, setPageSize] = useState(null);
-  const [totalRecords, setTotalRecords] = useState(null);
+  const [pageSize, setPageSize] = useState(0);
+  const [totalRecords, setTotalRecords] = useState(0);
   const [tableData, setTableData] = useState<Property[] | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [shouldReload, setShouldReload] = useState(false);
@@ -42,28 +44,35 @@ const PropertiesPage = () => {
     mounted.current = true;
     async function fetchProperties() {
       setIsLoading(true);
-      const filters = getCookie('last-properties-search-filters');
-      await window.electron.ipcRenderer.sendMessage(ipc.postPropertiesPage, {
-        page: currentPage,
-        filters: filters || '{}',
+      await new Promise((resolve) => {
+        const filters = getCookie('last-properties-search-filters');
+        window.electron.ipcRenderer.sendMessage(ipc.postPropertiesPage, {
+          page: currentPage,
+          filters: filters || '{}',
+        });
+
+        window.electron.ipcRenderer.once(
+          ipc.postPropertiesPage,
+          ({ properties, totalRecords, pageSize, message, status }) => {
+            if (status === 'success') {
+              setTableData(properties);
+              setTotalRecords(totalRecords);
+              setPageSize(pageSize);
+              window.scrollTo(0, 0);
+              resolve(setIsLoading(false));
+            } else {
+              toast.error(message);
+              reject(setIsLoading(false));
+            }
+          },
+        );
       });
-      await window.electron.ipcRenderer.once(
-        ipc.postPropertiesPage,
-        ({ properties, totalRecords, pageSize }) => {
-          setTableData(properties);
-          setTotalRecords(totalRecords);
-          setPageSize(pageSize);
-          window.scrollTo(0, 0);
-        },
-      );
-      setIsLoading(false);
     }
 
     if (mounted.current && isConnectedToDB) fetchProperties();
   }, [shouldReload, currentPage, isConnectedToDB]);
 
   if (isLoading) return <Spinner containerClassName="page-spinner" />;
-  if (!totalRecords || !pageSize) return <span>No Matching Records Found</span>;
 
   const totalPages = Math.floor(totalRecords / pageSize) || 1;
 

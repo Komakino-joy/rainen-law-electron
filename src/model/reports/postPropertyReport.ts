@@ -37,7 +37,11 @@ export async function postPropertyReport(payload: OwnProps) {
 
     const reportResults = (await conn.query(propertiesReportQuery)).rows;
 
-    return reportResults;
+    return {
+      status: 'success',
+      message: '',
+      data: reportResults,
+    };
   } catch (error) {
     console.log(error);
     return {

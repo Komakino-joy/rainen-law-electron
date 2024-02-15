@@ -51,23 +51,24 @@ const ClientsTable: React.FC<OwnProps> = ({
         {
           label: 'Yes',
           onClick: async () => {
-            await window.electron.ipcRenderer.sendMessage(
-              ipc.postDeleteClient,
-              id,
-            );
-            await window.electron.ipcRenderer.once(
-              ipc.postDeleteClient,
-              ({ message, status }) => {
-                toast[status](message, { id: 'delete-client' });
-                if (status === 'success') {
-                  const filteredArray = tableData.filter(
-                    (row: Client) => row.id.toString() !== id.toString(),
-                  );
-                  setTableData(filteredArray);
-                  updateClientList();
-                }
-              },
-            );
+            await new Promise((resolve) => {
+              window.electron.ipcRenderer.sendMessage(ipc.postDeleteClient, id);
+              window.electron.ipcRenderer.once(
+                ipc.postDeleteClient,
+                ({ message, status }) => {
+                  if (status === 'success') {
+                    const filteredArray = tableData.filter(
+                      (row: Client) => row.id.toString() !== id.toString(),
+                    );
+                    setTableData(filteredArray);
+                    updateClientList();
+                    resolve(toast[status](message, { id: 'delete-client' }));
+                  } else {
+                    resolve(toast[status](message, { id: 'delete-client' }));
+                  }
+                },
+              );
+            });
           },
         },
         {

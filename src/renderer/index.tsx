@@ -1,7 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import { Toaster } from 'react-hot-toast';
-import { BrowserRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import { AuthProvider } from '~/context/AuthContext';
 import { CitiesProvider } from '~/context/CitiesContext';
 import { ClientsContextProvider } from '~/context/ClientsContext';
@@ -15,7 +15,7 @@ const container = document.getElementById('root') as HTMLElement;
 const root = createRoot(container);
 root.render(
   <>
-    <BrowserRouter>
+    <MemoryRouter>
       <DatabaseContextProvider>
         <AuthProvider>
           <UsersContextProvider>
@@ -33,7 +33,7 @@ root.render(
           </UsersContextProvider>
         </AuthProvider>
       </DatabaseContextProvider>
-    </BrowserRouter>
+    </MemoryRouter>
     <Toaster />
     <div id="modal-root"></div>
   </>,

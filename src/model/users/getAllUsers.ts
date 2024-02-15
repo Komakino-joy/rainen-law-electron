@@ -18,7 +18,11 @@ export async function getAllUsers() {
         `;
     const result = await conn.query(selectQuery);
 
-    return result.rows;
+    return {
+      status: 'success',
+      message: '',
+      users: result.rows,
+    };
   } catch (error) {
     console.log(error);
     return {

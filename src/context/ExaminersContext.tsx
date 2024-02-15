@@ -9,6 +9,7 @@ import {
 import { ipc } from '~/constants/ipcEvents';
 import { Examiner } from '~/contracts';
 import { useIsConnectedToDB } from './DatabaseContext';
+import toast from 'react-hot-toast';
 interface OwnProps {
   isLoadingExaminerscontext: boolean;
   examinersList: any[];
@@ -34,23 +35,34 @@ export const ExaminersContextProvider = ({ children }: { children: any }) => {
   useEffect(() => {
     mounted.current = true;
     async function fetchExaminers() {
-      setIsLoading(true);
-      await window.electron.ipcRenderer.sendMessage(ipc.getExaminers);
-      await window.electron.ipcRenderer.once(ipc.getExaminers, (response) => {
-        setExaminersList(response);
-
-        setExaminersDropDownOptions(
-          response
-            .filter((examiner) => examiner.name && examiner.is_active)
-            .map((examiner: Examiner) => ({
-              label: examiner.name,
-              value: examiner.name,
-            })),
-        );
-
+      try {
+        setIsLoading(true);
+        await new Promise((resolve) => {
+          window.electron.ipcRenderer.sendMessage(ipc.getExaminers);
+          window.electron.ipcRenderer.once(
+            ipc.getExaminers,
+            ({ examiners, status, message }) => {
+              if (status === 'success') {
+                setExaminersList(examiners);
+                setExaminersDropDownOptions(
+                  examiners
+                    .filter((examiner) => examiner.name && examiner.is_active)
+                    .map((examiner: Examiner) => ({
+                      label: examiner.name,
+                      value: examiner.name,
+                    })),
+                );
+                resolve('');
+              } else {
+                resolve(toast[status](message, { id: 'get-examiners' }));
+              }
+            },
+          );
+        });
+      } finally {
         setIsLoading(false);
         setShouldFetch(false);
-      });
+      }
     }
 
     if (mounted.current && isConnectedToDB && shouldFetch) fetchExaminers();

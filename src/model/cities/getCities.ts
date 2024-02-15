@@ -6,7 +6,11 @@ export async function getCities() {
     const getAllCitiesQuery = `SELECT * FROM cities ORDER BY state_abbrv, city;`;
     const result = await conn.query(getAllCitiesQuery);
 
-    return result.rows;
+    return {
+      status: 'success',
+      message: '',
+      cities: result.rows,
+    };
   } catch (error) {
     console.log(error);
     return {

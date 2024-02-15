@@ -81,56 +81,64 @@ const EditStatusCodeForm: React.FC<EditStatusCodeFormProps> = ({
     if (isDirtyAlt) return;
 
     if (queryType === 'insert') {
-      // Adding selection type so we know which table to update in the endpoint.
-      await window.electron.ipcRenderer.sendMessage(
-        ipc.postInsertDropDownOption,
-        {
+      await new Promise((resolve) => {
+        window.electron.ipcRenderer.sendMessage(ipc.postInsertDropDownOption, {
           ...data,
+          // Adding selection type so we know which table to update in the endpoint.
           selectionType,
-        },
-      );
-      await window.electron.ipcRenderer.once(
-        ipc.postInsertDropDownOption,
-        ({ newRecord, message, status }) => {
-          toast[status](message, { id: 'insert-drop-down-option' });
-
-          if (status === 'success') {
-            setTableData([newRecord, ...tableData]);
-            reset();
-            fetchUpdatedDropDownList();
-          }
-        },
-      );
+        });
+        window.electron.ipcRenderer.once(
+          ipc.postInsertDropDownOption,
+          ({ newRecord, message, status }) => {
+            if (status === 'success') {
+              setTableData([newRecord, ...tableData]);
+              reset();
+              fetchUpdatedDropDownList();
+              resolve(
+                toast[status](message, { id: 'insert-drop-down-option' }),
+              );
+            } else {
+              resolve(
+                toast[status](message, { id: 'insert-drop-down-option' }),
+              );
+            }
+          },
+        );
+      });
     }
 
     if (queryType === 'update') {
-      await window.electron.ipcRenderer.sendMessage(
-        ipc.postUpdateDropDownOption,
-        {
+      await new Promise((resolve) => {
+        window.electron.ipcRenderer.sendMessage(ipc.postUpdateDropDownOption, {
           ...data,
           id: statusCodeId,
           selectionType,
-        },
-      );
-      await window.electron.ipcRenderer.once(
-        ipc.postUpdateDropDownOption,
-        ({ updatedRecord, message, status }) => {
-          toast[status](message, { id: 'update-drop-down-option' });
+        });
+        window.electron.ipcRenderer.once(
+          ipc.postUpdateDropDownOption,
+          ({ updatedRecord, message, status }) => {
+            if (status === 'success') {
+              const updatedData = tableData.map((record) => {
+                if (record.id === updatedRecord.id) {
+                  record = updatedRecord;
+                }
+                return record;
+              });
 
-          if (status === 'success') {
-            const updatedData = tableData.map((record) => {
-              if (record.id === updatedRecord.id) {
-                record = updatedRecord;
-              }
-              return record;
-            });
-
-            setTableData(updatedData);
-            reset(updatedRecord);
-            fetchUpdatedDropDownList();
-          }
-        },
-      );
+              setTableData(updatedData);
+              reset(updatedRecord);
+              fetchUpdatedDropDownList();
+              resolve(
+                toast[status](message, { id: 'update-drop-down-option' }),
+              );
+            } else {
+              resolve(
+                toast[status](message, { id: 'update-drop-down-option' }),
+              );
+            }
+          },
+        );
+      });
     }
   };
 

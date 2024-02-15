@@ -31,6 +31,7 @@ export async function postLogin({ username = '', password = '' }) {
     if (result === true) {
       return {
         status: 'success',
+        message: '',
         user: {
           id: queryResults.rows[0][dbRef.users.id],
           username: queryResults.rows[0][dbRef.users.username],

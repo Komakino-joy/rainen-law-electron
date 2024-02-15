@@ -70,8 +70,8 @@ export function setupIPCListeners() {
   });
 
   ipcMain.on(ipc.postLogin, async (event, payload: UserCredentials) => {
-    const authResponse = await postLogin(payload);
-    event.reply(ipc.postLogin, { authResponse });
+    const response = await postLogin(payload);
+    event.reply(ipc.postLogin, response);
   });
 
   // Buyer Seller
@@ -109,12 +109,12 @@ export function setupIPCListeners() {
   // Clients
   ipcMain.on(ipc.getAllClients, async (event) => {
     const response = await getAllClients();
-    event.reply(ipc.getAllClients, response.data);
+    event.reply(ipc.getAllClients, response);
   });
 
   ipcMain.on(ipc.getLatestUpdatedClients, async (event) => {
     const response = await getLatestUpdatedClients();
-    event.reply(ipc.getLatestUpdatedClients, response.data);
+    event.reply(ipc.getLatestUpdatedClients, response);
   });
 
   ipcMain.on(

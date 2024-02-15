@@ -18,7 +18,8 @@ export async function getAllClients() {
 
     return {
       status: 'success',
-      data: result.rows,
+      message: '',
+      clients: result.rows,
     };
   } catch (error) {
     console.log(error);

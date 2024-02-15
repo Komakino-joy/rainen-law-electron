@@ -105,9 +105,13 @@ export async function postClientsPage(page: string, filters: string) {
       clients: clientsResults,
       totalRecords,
       pageSize,
+      status: 'success',
     };
   } catch (e) {
     console.log('Unable to fetch clients: ', e);
-    return {};
+    return {
+      status: 'error',
+      message: 'Unable to fetch clients',
+    };
   }
 }

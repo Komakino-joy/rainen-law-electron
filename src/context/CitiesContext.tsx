@@ -9,6 +9,7 @@ import {
 import { ipc } from '~/constants/ipcEvents';
 import { County } from '~/contracts';
 import { useIsConnectedToDB } from './DatabaseContext';
+import toast from 'react-hot-toast';
 
 interface CitiesProps {
   isLoadingCities: boolean;
@@ -36,27 +37,38 @@ export const CitiesProvider = ({ children }: { children: any }) => {
   useEffect(() => {
     mounted.current = true;
     async function fetchCities() {
-      setIsLoading(true);
-      await window.electron.ipcRenderer.sendMessage(ipc.getCities);
-      await window.electron.ipcRenderer.once(ipc.getCities, (counties) => {
-        setCountiesList(
-          counties.map((county: County) => ({
-            label: county.county,
-            value: county.code,
-          })),
-        );
+      try {
+        setIsLoading(true);
+        await new Promise((resolve) => {
+          window.electron.ipcRenderer.sendMessage(ipc.getCities);
+          window.electron.ipcRenderer.once(
+            ipc.getCities,
+            ({ cities, status, message }) => {
+              if (status === 'success') {
+                setCountiesList(
+                  cities.map((county: County) => ({
+                    label: county.county,
+                    value: county.code,
+                  })),
+                );
 
-        setCountyIdMap(
-          counties.reduce((acc: {}, county: any) => {
-            // @ts-ignore
-            acc[county.code] = county.county;
-            return acc;
-          }, {}),
-        );
-
+                setCountyIdMap(
+                  cities.reduce((acc: {}, county: any) => {
+                    // @ts-ignore
+                    acc[county.code] = county.county;
+                    return acc;
+                  }, {}),
+                );
+              } else {
+                toast[status](message, { id: 'get-cities' });
+              }
+            },
+          );
+        });
+      } finally {
         setIsLoading(false);
         setShouldFetch(false);
-      });
+      }
     }
 
     if (mounted.current && isConnectedToDB && shouldFetch) fetchCities();

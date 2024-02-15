@@ -1,6 +1,7 @@
 import { ipc } from '~/constants/ipcEvents';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useIsConnectedToDB } from './DatabaseContext';
+import toast from 'react-hot-toast';
 
 interface OwnProps {
   isLoadingUserscontext: boolean;
@@ -22,12 +23,25 @@ export const UsersContextProvider = ({ children }: { children: any }) => {
   useEffect(() => {
     mounted.current = true;
     async function fetchUsersContext() {
-      setIsLoading(true);
-      await window.electron.ipcRenderer.sendMessage(ipc.getAllUsers);
-      await window.electron.ipcRenderer.once(ipc.getAllUsers, (users) => {
-        setUsersList(users);
-      });
-      setIsLoading(false);
+      try {
+        setIsLoading(true);
+        await new Promise((resolve) => {
+          window.electron.ipcRenderer.sendMessage(ipc.getAllUsers);
+          window.electron.ipcRenderer.once(
+            ipc.getAllUsers,
+            ({ users, status, message }) => {
+              if (status === 'success') {
+                setUsersList(users);
+              } else {
+                toast[status](message, { id: 'get-all-users' });
+              }
+              resolve('');
+            },
+          );
+        });
+      } finally {
+        setIsLoading(false);
+      }
     }
 
     if (mounted.current && isConnectedToDB) fetchUsersContext();

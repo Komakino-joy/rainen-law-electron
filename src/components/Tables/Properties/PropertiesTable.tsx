@@ -53,24 +53,27 @@ const PropertiesTable: React.FC<OwnProps> = ({
         {
           label: 'Yes',
           onClick: async () => {
-            await window.electron.ipcRenderer.sendMessage(
-              ipc.postDeleteProperty,
-              id,
-            );
-            await window.electron.ipcRenderer.once(
-              ipc.postDeleteProperty,
-              ({ status, message }) => {
-                toast[status](message, { id: 'delete-property' });
-
-                if (status === 'success') {
-                  const filteredArray = tableData.filter(
-                    (row: Property) => row.id.toString() !== id.toString(),
-                  );
-                  setTableData(filteredArray);
-                  fetchPropertyLists();
-                }
-              },
-            );
+            await new Promise((resolve) => {
+              window.electron.ipcRenderer.sendMessage(
+                ipc.postDeleteProperty,
+                id,
+              );
+              window.electron.ipcRenderer.once(
+                ipc.postDeleteProperty,
+                ({ status, message }) => {
+                  if (status === 'success') {
+                    const filteredArray = tableData.filter(
+                      (row: Property) => row.id.toString() !== id.toString(),
+                    );
+                    setTableData(filteredArray);
+                    fetchPropertyLists();
+                    resolve(toast[status](message, { id: 'delete-property' }));
+                  } else {
+                    resolve(toast[status](message, { id: 'delete-property' }));
+                  }
+                },
+              );
+            });
           },
         },
         {

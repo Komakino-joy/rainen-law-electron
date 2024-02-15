@@ -76,6 +76,7 @@ const CustomSelect = ({
       <Select
         defaultInputValue={defaultValue}
         className={`select-container ${isError && 'border-red'}`}
+        menuPortalTarget={document.body}
         // classNamePrefix="select"
         // @ts-ignore
         styles={customStyles}

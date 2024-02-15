@@ -16,7 +16,11 @@ export async function postPropertiesInfo(c_number: string) {
     const result = await conn.query(getClientPropertyInfoQuery, [
       Number(c_number),
     ]);
-    return result.rows;
+    return {
+      status: 'success',
+      message: '',
+      propertiesInfo: result.rows,
+    };
   } catch (error) {
     console.log(error);
     return {

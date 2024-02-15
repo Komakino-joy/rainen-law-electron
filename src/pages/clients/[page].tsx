@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import toast from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import EditClientForm from '@/components/Forms/EditClientForm/EditClientForm';
 import Modal from '@/components/Modal/Modal';
@@ -16,8 +17,8 @@ const ClientsPage = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [pageSize, setPageSize] = useState(null);
-  const [totalRecords, setTotalRecords] = useState(null);
+  const [pageSize, setPageSize] = useState(0);
+  const [totalRecords, setTotalRecords] = useState(0);
   const [tableData, setTableData] = useState<Client[] | null>(null);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [shouldReload, setShouldReload] = useState(false);
@@ -43,25 +44,30 @@ const ClientsPage = () => {
     mounted.current = true;
     async function fetchClients() {
       setIsLoading(true);
-      const filters = getCookie('last-clients-search-filters');
-      try {
-        await window.electron.ipcRenderer.sendMessage(ipc.postClientsPage, {
+      await new Promise((resolve) => {
+        const filters = getCookie('last-clients-search-filters');
+
+        window.electron.ipcRenderer.sendMessage(ipc.postClientsPage, {
           page: currentPage,
           filters: filters || '{}',
         });
-        await window.electron.ipcRenderer.once(
+
+        window.electron.ipcRenderer.once(
           ipc.postClientsPage,
-          ({ clients, totalRecords, pageSize }) => {
-            setTableData(clients);
-            setTotalRecords(totalRecords);
-            setPageSize(pageSize);
-            window.scrollTo(0, 0);
+          ({ clients, totalRecords, pageSize, status, message }) => {
+            if (status === 'success') {
+              setTableData(clients);
+              setTotalRecords(totalRecords);
+              setPageSize(pageSize);
+              window.scrollTo(0, 0);
+              resolve(setIsLoading(false));
+            } else {
+              toast.error(message, { id: 'fetch-properties-page' });
+              reject(setIsLoading(false));
+            }
           },
         );
-      } catch (error) {
-        console.log(error);
-      }
-      setIsLoading(false);
+      });
     }
 
     if (mounted.current && isConnectedToDB) fetchClients();
@@ -72,7 +78,6 @@ const ClientsPage = () => {
   }, [shouldReload, currentPage, isConnectedToDB]);
 
   if (isLoading) return <Spinner containerClassName="page-spinner" />;
-  if (!totalRecords || !pageSize) return <span>No Matching Records Found</span>;
 
   const totalPages = Math.floor(totalRecords / pageSize);
 

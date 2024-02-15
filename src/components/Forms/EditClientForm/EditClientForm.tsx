@@ -102,21 +102,25 @@ const ClientForm: React.FC<OwnProps> = ({
 
   const onSubmit = async (data: Partial<Client>) => {
     if (queryType === 'insert') {
-      await window.electron.ipcRenderer.sendMessage(ipc.postInsertClient, {
-        ...data,
-        username: user.username,
+      await new Promise((resolve) => {
+        window.electron.ipcRenderer.sendMessage(ipc.postInsertClient, {
+          ...data,
+          username: user.username,
+        });
+        window.electron.ipcRenderer.once(
+          ipc.postInsertClient,
+          ({ newClientId, status, message }) => {
+            handleAfterSubmit(newClientId);
+            if (status === 'success') {
+              reset();
+              updateClientList();
+              resolve(toast[status](message, { id: 'insert-client' }));
+            } else {
+              resolve(toast[status](message, { id: 'insert-client' }));
+            }
+          },
+        );
       });
-      await window.electron.ipcRenderer.once(
-        ipc.postInsertClient,
-        ({ newClientId, status, message }) => {
-          handleAfterSubmit(newClientId);
-          if (status !== 'error') {
-            toast[status](message, { id: 'client-insert' });
-            reset();
-            updateClientList();
-          }
-        },
-      );
     }
 
     if (queryType === 'update') {
@@ -126,25 +130,26 @@ const ClientForm: React.FC<OwnProps> = ({
           {
             label: 'Yes',
             onClick: async () => {
-              await window.electron.ipcRenderer.sendMessage(
-                ipc.postUpdateClient,
-                {
+              await new Promise((resolve) => {
+                window.electron.ipcRenderer.sendMessage(ipc.postUpdateClient, {
                   ...data,
                   id: clientInfoSnippet.id, // Passing id to update correct record
                   username: user.username,
-                },
-              );
-              await window.electron.ipcRenderer.once(
-                ipc.postUpdateClient,
-                ({ updatedRecord, message, status }) => {
-                  toast[status](message, { id: 'updated-client' });
-                  if (status !== 'error') {
-                    handleAfterSubmit(clientInfoSnippet.id);
-                    reset(updatedRecord);
-                    updateClientList();
-                  }
-                },
-              );
+                });
+                window.electron.ipcRenderer.once(
+                  ipc.postUpdateClient,
+                  ({ updatedRecord, message, status }) => {
+                    if (status === 'success') {
+                      handleAfterSubmit(clientInfoSnippet.id);
+                      reset(updatedRecord);
+                      updateClientList();
+                      resolve(toast[status](message, { id: 'updated-client' }));
+                    } else {
+                      resolve(toast[status](message, { id: 'updated-client' }));
+                    }
+                  },
+                );
+              });
             },
           },
           {

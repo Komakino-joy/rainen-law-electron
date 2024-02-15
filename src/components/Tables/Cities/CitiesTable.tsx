@@ -42,23 +42,24 @@ const CitiesTable: React.FC<OwnProps> = ({
         {
           label: 'Yes',
           onClick: async () => {
-            await window.electron.ipcRenderer.sendMessage(
-              ipc.postDeleteCity,
-              id,
-            );
-            await window.electron.ipcRenderer.once(
-              ipc.postDeleteCity,
-              ({ message, status }) => {
-                toast[status](message, { id: 'delete-city' });
-                if (status === 'success') {
-                  const filteredArray = tableData.filter(
-                    (row) => row.id.toString() !== id.toString(),
-                  );
-                  setTableData(filteredArray);
-                  updateCitiesContext();
-                }
-              },
-            );
+            await new Promise((resolve) => {
+              window.electron.ipcRenderer.sendMessage(ipc.postDeleteCity, id);
+              window.electron.ipcRenderer.once(
+                ipc.postDeleteCity,
+                ({ message, status }) => {
+                  if (status === 'success') {
+                    const filteredArray = tableData.filter(
+                      (row) => row.id.toString() !== id.toString(),
+                    );
+                    setTableData(filteredArray);
+                    updateCitiesContext();
+                    resolve(toast[status](message, { id: 'delete-city' }));
+                  } else {
+                    resolve(toast[status](message, { id: 'delete-city' }));
+                  }
+                },
+              );
+            });
           },
         },
         {

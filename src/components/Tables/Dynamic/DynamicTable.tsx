@@ -92,41 +92,44 @@ const SelectOptionsTable: React.FC<DynamicTable> = ({
         {
           label: 'Yes',
           onClick: async () => {
-            await window.electron.ipcRenderer.sendMessage(
-              ipc.postDeleteDropDownOption,
-              {
-                id,
-                selectionType,
-              },
-            );
-            await window.electron.ipcRenderer.once(
-              ipc.postDeleteDropDownOption,
-              (response) => {
-                if (response.status === 'success') {
-                  toast.success(response.message, {
-                    id: 'delete-select-drop-down-options',
-                  });
-
-                  const filteredArray = tableData.filter(
-                    (row) => row.id !== id,
-                  );
-                  setTableData(filteredArray);
-                }
-
-                if (response.status === 'error') {
-                  toast.error(response.message, {
-                    id: 'delete-select-drop-down-options',
-                  });
-                }
-              },
-            );
+            await new Promise((resolve) => {
+              window.electron.ipcRenderer.sendMessage(
+                ipc.postDeleteDropDownOption,
+                {
+                  id,
+                  selectionType,
+                },
+              );
+              window.electron.ipcRenderer.once(
+                ipc.postDeleteDropDownOption,
+                ({ status, message }) => {
+                  if (status === 'success') {
+                    const filteredArray = tableData.filter(
+                      (row) => row.id !== id,
+                    );
+                    setTableData(filteredArray);
+                    resolve(
+                      toast[status](message, {
+                        id: 'delete-drop-down-options',
+                      }),
+                    );
+                  } else {
+                    reject(
+                      toast[status](message, {
+                        id: 'delete-drop-down-options',
+                      }),
+                    );
+                  }
+                },
+              );
+            });
           },
         },
         {
           label: 'No',
           onClick: () =>
             toast.error('Operation Cancelled.', {
-              id: 'delete-select-drop-down-options',
+              id: 'delete-drop-down-options',
             }),
         },
       ],
