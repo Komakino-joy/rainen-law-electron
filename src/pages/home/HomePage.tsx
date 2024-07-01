@@ -148,7 +148,7 @@ const HomePage: React.FC = () => {
                   tableData={propertyData}
                   handleModalOpen={handleModalOpen}
                   setTableData={() => {}}
-                  isHomePreviewTable={true}
+                  isHomePreviewTable
                 />
               </HomeRecordPreviewCard>
             ) : null}

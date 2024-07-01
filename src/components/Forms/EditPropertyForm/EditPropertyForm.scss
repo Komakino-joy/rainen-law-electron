@@ -1,44 +1,33 @@
 #edit-property-form {
-  .top-section,
-  .mid-section {
-    gap: 10px;
-  }
-
-  .column-1 {
-    flex: 1;
-  }
-
-  .column-2,
-  .column-3 {
-    flex: 0.25;
-  }
-
-  .city-state-section,
-  .zip-street-section,
-  .lot-condo-unit-section,
-  .status-type-section,
+  .state-zip-condo-unit,
+  .lot-street-city,
+  .client-client-file-requester-type-status,
   .comp-ref-file-num-section,
   .client-id-file-section,
-  .requester-req-date-close-date-section {
-    gap: 10px;
+  .req-date-close-date-section,
+  .books-pages-cert-doc {
+    gap: 8px;
     width: 100%;
     align-items: center;
 
-    .assigned,
-    .requester {
+    .assigned {
       width: 310px;
     }
 
     .city,
     .street,
     .county,
-    .clientName {
+    .clientName,
+    .requester {
       flex: 1;
+    }
+
+    .lot {
+      width: 100px;
     }
 
     .state,
     .zip {
-      flex: 0.25;
       min-width: 82px;
     }
 
@@ -47,11 +36,6 @@
     .clientFileNumber {
       flex: 0.5;
     }
-  }
-
-  .status-type-section,
-  .instructions-section {
-    margin-top: 5px;
   }
 
   .instructions-section {

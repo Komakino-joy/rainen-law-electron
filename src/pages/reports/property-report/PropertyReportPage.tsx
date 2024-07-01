@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import toast from 'react-hot-toast';
 import { useReactToPrint } from 'react-to-print';
 import Button from '@/components/Button/Button';
 import FormInput from '@/components/Forms/FormInput/FormInput';
@@ -12,9 +13,11 @@ import { ipc } from '~/constants/ipcEvents';
 import { Property, ReportProperty } from '~/contracts';
 import { dateToString, timestampToDate } from '~/utils';
 import styles from './PropertyReport.module.scss';
-import toast from 'react-hot-toast';
+import { usePropertiesContext } from '@/context/PropertiesContext';
 
 export default function PropertyReport() {
+  const { propertiesSelectOptions, isLoadingPropertyContext } =
+    usePropertiesContext();
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, sethasSearched] = useState(false);
   const [propertiesData, setPropertiesData] = useState<Property[] | null>(null);
@@ -29,12 +32,12 @@ export default function PropertyReport() {
     control,
     register,
     handleSubmit,
-    reset,
-    formState: { errors, isDirty },
+    formState: { errors },
   } = useForm({
     defaultValues: {
-      startDate: '',
+      startDate: Date.now(),
       endDate: Date.now(),
+      p_status: '',
     },
   });
 
@@ -85,8 +88,6 @@ export default function PropertyReport() {
           },
         );
       });
-
-      reset();
     } finally {
       setIsLoading(false);
       sethasSearched(true);
@@ -101,6 +102,9 @@ export default function PropertyReport() {
   const getPageMargins = () => {
     return `@page { margin: 10px 20px !important; }`;
   };
+
+  if (isLoadingPropertyContext)
+    return <Spinner containerClassName="page-spinner" />;
 
   return (
     <div className={`flex-y gap-md ${styles['property-page-content']}`}>
@@ -149,8 +153,37 @@ export default function PropertyReport() {
               }}
             />
 
+            {propertiesSelectOptions.p_status &&
+              propertiesSelectOptions.p_status.length > 0 && (
+                <Controller
+                  name="p_status"
+                  control={control}
+                  render={({ field: { onChange } }) => {
+                    return (
+                      <FormInput
+                        defaultValue="All"
+                        name="p_status"
+                        labelKey="p_status"
+                        labelText="Status"
+                        type="select"
+                        customClass={styles['status-selection']}
+                        selectOnChange={onChange}
+                        options={[
+                          { label: 'All', value: '' },
+                          ...propertiesSelectOptions.p_status,
+                        ]}
+                        isRequired={false}
+                        // @ts-ignore
+                        register={register}
+                        errors={errors}
+                      />
+                    );
+                  }}
+                />
+              )}
+
             <div>
-              <Button isDisabled={!isDirty} type={'submit'}>
+              <Button isDisabled={false} type={'submit'}>
                 Submit
               </Button>
             </div>

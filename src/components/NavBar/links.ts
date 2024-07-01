@@ -36,6 +36,10 @@ const links: Links = {
       href: '/reports/property-report',
       ctaText: 'Property Report',
     },
+    {
+      href: '/reports/property-labels',
+      ctaText: 'Print Property Labels',
+    },
   ],
   management: [
     {

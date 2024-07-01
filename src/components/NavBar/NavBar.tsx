@@ -1,5 +1,4 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth, useIsAdmin } from '~/context/AuthContext';
 import NavBarFacet from './NavBarFacet/NavBarFacet';
 import links, { LinkType } from './links';
@@ -12,6 +11,7 @@ const NavBar = () => {
   if (!isAdmin) delete links.management;
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   return (
     <div id="nav-bar-wrapper">
