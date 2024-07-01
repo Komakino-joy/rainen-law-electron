@@ -15,6 +15,7 @@ import PropertiesPage from '~/pages/properties/[page]';
 import HomePage from '~/pages/home/HomePage';
 import ManagementPage from '~/pages/management';
 import PropertyReportPage from '~/pages/reports/property-report';
+import PropertyLabelsPage from '@/pages/reports/property-labels';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import '~/styles/confirm-alert.scss';
 import '~/styles/home.scss';
@@ -54,6 +55,7 @@ export default function App() {
         <Route path="/clients/add-new" Component={AddNewClientPage} />
         <Route path="/clients/search" Component={SearchClientsPage} />
         <Route path="/reports/property-report" Component={PropertyReportPage} />
+        <Route path="/reports/property-labels" Component={PropertyLabelsPage} />
         <Route path="/management" Component={ManagementPage} />
       </Routes>
     </div>

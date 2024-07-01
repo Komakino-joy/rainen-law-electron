@@ -5,7 +5,6 @@ import EditPropertyModal from '@/components/Modals/EditPropertyModal';
 import Pagination from '@/components/Pagination/Pagination';
 import PropertiesTable from '@/components/Tables/Properties/PropertiesTable';
 import Spinner from '@/components/Spinner/Spinner';
-import { res } from '~/constants';
 import { ipc } from '~/constants/ipcEvents';
 import { useIsConnectedToDB } from '~/context/DatabaseContext';
 import { Property } from '~/contracts';
@@ -44,7 +43,7 @@ const PropertiesPage = () => {
     mounted.current = true;
     async function fetchProperties() {
       setIsLoading(true);
-      await new Promise((resolve) => {
+      await new Promise((resolve, reject) => {
         const filters = getCookie('last-properties-search-filters');
         window.electron.ipcRenderer.sendMessage(ipc.postPropertiesPage, {
           page: currentPage,

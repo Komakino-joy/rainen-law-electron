@@ -34,7 +34,7 @@ interface OwnProps {
 const PropertiesTable: React.FC<OwnProps> = ({
   handleModalOpen,
   hiddenColumns = [''],
-  isHomePreviewTable,
+  isHomePreviewTable = false,
   setTableData,
   tableData,
 }) => {
@@ -93,10 +93,10 @@ const PropertiesTable: React.FC<OwnProps> = ({
       {
         Header: 'PT Date',
         accessor: (d: Property) =>
-          timestampToDate(
-            d[dbRef.properties.p_input_date as keyof Property],
-            'mmDDyyyy',
-          ).date,
+          new Date(d[dbRef.properties.p_input_date as keyof Property]),
+        Cell: ({ value }: { value: any }) =>
+          timestampToDate(value, 'mmDDyyyy').date,
+        sortType: 'datetime',
       },
       {
         Header: 'City',

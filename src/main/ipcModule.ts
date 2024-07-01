@@ -173,8 +173,15 @@ export function setupIPCListeners() {
 
   ipcMain.on(
     ipc.postPropertiesPage,
-    async (event, { page, filters }: { page: string; filters: string }) => {
-      const response = await postPropertiesPage(page, filters);
+    async (
+      event,
+      {
+        page,
+        filters,
+        pageSize,
+      }: { page: string; filters: string; pageSize: number },
+    ) => {
+      const response = await postPropertiesPage(page, filters, pageSize);
       event.reply(ipc.postPropertiesPage, response);
     },
   );

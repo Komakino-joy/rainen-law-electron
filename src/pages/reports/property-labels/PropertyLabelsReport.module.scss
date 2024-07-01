@@ -2,10 +2,6 @@
   align-items: center;
 }
 
-.status-selection {
-  width: 100px;
-}
-
 .info-section {
   width: 800px;
 }
@@ -15,13 +11,9 @@
 
   .print-report-button {
     position: absolute;
-    top: 20px;
+    top: 0px;
     right: 0px;
   }
-}
-
-.date-inputs {
-  border: 1px solid red !important;
 }
 
 .property-report-printable-area {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDown } from '~/icons/Icons';
 import './NavBarFacet.scss';
 
@@ -14,6 +14,7 @@ interface OwnProps {
 const NavBarFacet: React.FC<OwnProps> = ({ name, links }) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   return (
     <div className="nav-bar-facet">

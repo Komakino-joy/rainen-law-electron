@@ -5,10 +5,13 @@ import { dbRef } from '../../constants/dbRefs';
 import { timestampToDate } from '../../utils';
 import { getConn } from '../dbconfig';
 
-export async function postPropertiesPage(page: string, filters: string) {
+export async function postPropertiesPage(
+  page: string,
+  filters: string,
+  pageSize = 50,
+) {
   try {
     const conn = await getConn();
-    const pageSize = 50;
     const pageOffset = pageSize * (Number(page) - 1);
     const {
       clients: C_tableRef,

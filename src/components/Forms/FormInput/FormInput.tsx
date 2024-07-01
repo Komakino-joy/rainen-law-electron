@@ -1,16 +1,17 @@
-import "react-datepicker/dist/react-datepicker.css";
-import { CalendarIcon, InfoIcon } from "~/icons/Icons";
-import Select from "~/components/Select/Select";
-import Tooltip from "~/components/Tooltip/Tooltip";
-import React from "react";
+import 'react-datepicker/dist/react-datepicker.css';
+import { CalendarIcon, InfoIcon } from '~/icons/Icons';
+import DatePicker from 'react-datepicker';
+import Select from '~/components/Select/Select';
+import Tooltip from '~/components/Tooltip/Tooltip';
+import React from 'react';
 import {
   UseFormRegister,
   FieldValues,
   FieldErrors,
   ControllerRenderProps,
-} from "react-hook-form";
-import DatePicker from "react-datepicker";
-import "./FormInput.scss";
+} from 'react-hook-form';
+import './FormInput.scss';
+import Dateinput from './Dateinput';
 
 interface FormInput {
   customClass?: string;
@@ -40,58 +41,51 @@ const Required: React.FC = () => <span className="required">*</span>;
 
 const FormInput: React.FC<FormInput> = (
   {
-    customClass = "",
+    customClass = '',
     labelKey,
     labelText,
     isRequired,
-    type = "",
+    type = '',
     register,
     errors,
     options,
-    min = "",
-    step = "",
-    max = "",
-    defaultValue = "",
+    min = '',
+    step = '',
+    max = '',
+    defaultValue = '',
     disabled = false,
     selectOnChange,
     validate = null,
-    autoComplete = "off",
+    autoComplete = 'off',
     checked,
-    tooltipText = "",
+    tooltipText = '',
     onBlur,
     field,
   },
-  props
+  props,
 ) => {
   const isError = Boolean(errors[labelKey] && isRequired);
 
   return (
     <div className={`form-input-group ${customClass}`}>
       <label htmlFor={labelKey}>
-        {labelText} {isRequired ? <Required /> : ""}{" "}
+        {labelText} {isRequired ? <Required /> : ''}{' '}
         {tooltipText.length > 0 && (
           <Tooltip text={tooltipText} icon={<InfoIcon />} />
         )}
       </label>
-      {type === "date" && field ? (
+      {type === 'date' && field ? (
         <div className="date-field">
-          <DatePicker
-            selected={field.value}
-            onChange={(date) => field.onChange(date)}
-            showIcon
-            icon={<CalendarIcon />}
-            //@ts-ignore
-            toggleCalendarOnIconClick
-          />
+          <Dateinput field={field} />
         </div>
-      ) : type === "select" && options ? (
+      ) : type === 'select' && options ? (
         <Select
           onChange={selectOnChange}
           options={options}
           defaultValue={defaultValue}
           isError={isError}
         />
-      ) : type === "textarea" ? (
+      ) : type === 'textarea' ? (
         <textarea
           defaultValue={defaultValue}
           {...register(labelKey, {
@@ -102,10 +96,10 @@ const FormInput: React.FC<FormInput> = (
         />
       ) : (
         <input
-          className={`${isError && "border-red"}`}
+          className={`${isError && 'border-red'}`}
           checked={checked}
           min={min}
-          step={step || "any"}
+          step={step || 'any'}
           max={max}
           defaultValue={defaultValue}
           disabled={disabled}
